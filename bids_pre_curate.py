@@ -17,57 +17,82 @@ def build_csv(group, proj_name):
 
     # Acquisitions
     acqs = fw.get_project_acquisitions(project.id)
-    acq_csv(acqs, proj_label)
-
-    # Subjects
-    subjs = fw.get_project_subjects(project.id)
-    subj_csv(subjs, proj_label)
+    data2csv(acqs, proj_label,
+             keep_keys=['_id', 'label'],
+             prefix='acquisition_labels',
+             column_rename=['id', 'label'],
+             user_columns=['modality', 'task', 'run', 'ignore'],
+             unique=['label'])
 
     # Sessions
     sess = fw.get_project_sessions(project.id)
-    ses_csv(sess, proj_label)
+    data2csv(sess, proj_label,
+             keep_keys=['_id', ['subject', 'label'], 'label'],
+             prefix='session_labels',
+             column_rename=['id', 'subject_label', 'existing_session_label'],
+             user_columns=['new_session_label'])
+
+    # Subjects
+    subj = fw.get_project_subjects(project.id)
+    data2csv(subj, proj_label,
+             keep_keys=['_id', 'label'],
+             prefix='subject_codes',
+             column_rename=['id', 'existing_subject_label'],
+             user_columns=['new_subject_label'])
 
 
-def acq_csv(acqs, proj_label):
+def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns=[], unique=[]):
+    """Creates a CSV on passed in data
+
+    Create a CSV of passed in data while specifying which keys should be kept,
+        how the columns should be named, what columns should be added, and whether
+        or not to only use unique values
+
+    Args:
+        data (list): list of dicts containting data
+        proj_label (str): project label
+        keep_keys (list): list of strings or list of lists, or combination.
+            This list keeps track of the keys from the acquisitions that
+            will be included in the csv.  A string in the list will be
+            treated as a top level key, whereas a list of strings in the
+            list will be treated as nested keys.  A nested key will be
+            relabeled with periods '.' denoting nesting.
+        prefix (str): prefix under which to save file
+        column_rename (list, optional): optional list of column titles in
+            the same order as keep_keys to be displayed on the CSV.
+        user_columns (list, optional): optional list of column titles
+            to add to the csv
+        unique (list,optional): If specified, find unique entries on the
+            given indices.
+
+    Returns:
+        n/a
+
+    """
     # Only need to keep keys from the returned acquisitions that are important for the csv
-    keep_keys = ['_id', 'label']  # Can be expanded later if needed
-    acquisitions = [{key: acq[key] for key in keep_keys} for acq in acqs]
+    kept_data = []
+    for datum in data:
+        kept_data.append({
+            (key if type(key) is str else '.'.join(key)):
+                (nested_get(datum, [key]) if type(key) is str else nested_get(datum, key))
+            for key in keep_keys
+        })
     # Convert to dataframe for writing csv
-    acq_df = pd.DataFrame(acquisitions)
+    data_df = pd.DataFrame(kept_data)
+
+    if unique:
+        data_df.drop_duplicates(subset=unique)
     # Rename _id to id
-    acq_df.columns = ['id', 'label']
-    acq_df = acq_df.reindex(columns=acq_df.columns.tolist() + ['modality', 'task', 'run', 'ignore'])
+    if column_rename:
+        # Assuming the user can't modify this, we don't need to catch this error
+        #      if len(column_rename) != len(keep_keys)
+        #          log.error(f'column_rename ({column_rename}) must be same length as keep_keys ({keep_keys}). Exiting')
+        #          os.sys.exit(1)
+        data_df.columns = column_rename
 
-    acq_df = acq_df.drop_duplicates(subset=['label'])
-    csv_file = f'/tmp/acquisition_labels_{proj_label}.csv'
-    acq_df.to_csv(csv_file)
+    if user_columns:
+        data_df = data_df.reindex(columns=data_df.columns.tolist() + user_columns)
 
-
-def subj_csv(subjs, proj_label):
-    # Only need to keep keys from the returned subjects that are important for the csv
-    keep_keys = ['_id', 'code']
-    subjects = [{key: subj[key] for key in keep_keys} for subj in subjs]
-    # Convert to dataframe for writing csv
-    subj_df = pd.DataFrame(subjects)
-    # Rename column names for readability
-    subj_df.columns = ['id', 'existing_subj_label']
-    subj_df['new_subject_labels'] = ''
-    csv_file = f'/tmp/subject_codes_{proj_label}.csv'
-    subj_df.to_csv(csv_file)
-
-
-def ses_csv(sess, proj_label):
-    # Only need to keep keys from the returned sessions that are important for the csv
-    # sessions are a little more complicated because we need a nested label subject.label.
-    keep_keys = ['_id', 'label', ['subject', 'label']]
-    sessions = [
-        {(key if type(key) is str else '_'.join(key)):
-             (nested_get(ses, key) if type(key) is list else nested_get(ses, [key]))
-         for key in keep_keys} for ses in sess
-    ]
-    ses_df = pd.DataFrame(sessions)
-    # Rename columns
-    ses_df.columns = ['id', 'existing_session_label', 'subject_label']
-    ses_df['new_session_labels'] = ''
-    csv_file = f'/tmp/sesect_codes_{proj_label}.csv'
-    ses_df.to_csv(csv_file)
+    data_df = data_df.drop_duplicates(subset=['label'])
+    csv_file = f'/tmp/{prefix}_{proj_label}.csv'
+    data_df.to_csv(csv_file)
