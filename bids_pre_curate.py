@@ -1,10 +1,12 @@
 import sys
 
 import flywheel
+from flywheel.models.info_update_input import InfoUpdateInput
 from utils.fly.make_file_name_safe import make_file_name_safe
 from utils.deep_dict import nested_get
 import logging
 import pandas as pd
+import pprint
 
 log = logging.getLogger(__name__)
 
@@ -102,7 +104,7 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     data_df.to_csv(csv_file)
 
-def read_from_csv(acq_df,subj_df,ses_df, project):
+def read_from_csv(acq_df,subj_df,ses_df, project,dry_run):
     fw = flywheel.Client()
     conf = fw.get_config().site.api_url
     # TODO: Need to do some validation to make sure the CSV file is in the correct format
@@ -114,15 +116,28 @@ def read_from_csv(acq_df,subj_df,ses_df, project):
     # Acquisitions
     for index, row in acq_df.iterrows():
         acquisition = fw.get_acquisition(row['id'])
-        to_update = {}
-        if row['new_acquisition_label']: to_update['label'] = row['new_acquisition_label']
-        if row['modality']: to_update['files.info.BIDS.Modality'] = row['modality']
-        if row['task']: to_update['files.info.BIDS.Task'] = row['task']
-        if row['run']: to_update['files.info.BIDS.Run'] = row['run']
-        if row['ignore']: to_update['files.info.BIDS.Ignore'] = row['ignore']
+        if row['new_acquisition_label']:
+            if dry_run:
+                log.info(f"NOT updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
+            else:
+                log.info(f"updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
+                acquisition.update({'label': row['new_acquisition_label']})
 
-        if to_update:
-            acquisition.update(to_update)
+        for file in acquisition.files:
+            to_update = {
+                'BIDS': {}
+            }
+            if row['modality']: to_update.BIDS['Modality'] = row['modality']
+            if row['task']: to_update.BIDS['Task'] = row['task']
+            if row['run']: to_update.BIDS['Run'] = row['run']
+            if row['ignore']: to_update.BIDS['Ignore'] = row['ignore']
+            to_update_data = InfoUpdateInput(set=to_update)
+            if dry_run:
+                log.info('NOT updating file information')
+            else:
+                log.info('updating file information')
+                resp = fw.modify_acquisition_file_info(acquisition.id,file.name,to_update_data)
+
 
 def move_sessions(subj_df,ses_df,project,fw,dry_run=False):
     unique_subjs = pd.unique(subj_df['new_subject_label'])
