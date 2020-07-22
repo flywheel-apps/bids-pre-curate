@@ -102,60 +102,60 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     data_df.to_csv(csv_file)
 
-def read_from_csv(csv_file, type='aqc', project):
+def read_from_csv(acq_df,subj_df,ses_df, project):
     fw = flywheel.Client()
     conf = fw.get_config().site.api_url
     # TODO: Need to do some validation to make sure the CSV file is in the correct format
     #   this should be at the row level, otherwise if they put columns in wrong, it may really
     #   mess up their whole project
-    data = pd.read_csv(csv_file)
+    # Subjects and Sessions
+    move_sessions(subj_df, ses_df, project,fw)
+    delete_empty_subjects()
+    # Acquisitions
+    for index, row in acq_df.iterrows():
+        acquisition = fw.get_acquisition(row['id'])
+        to_update = {}
+        if row['new_acquisition_label']: to_update['label'] = row['new_acquisition_label']
+        if row['modality']: to_update['files.info.BIDS.Modality'] = row['modality']
+        if row['task']: to_update['files.info.BIDS.Task'] = row['task']
+        if row['run']: to_update['files.info.BIDS.Run'] = row['run']
+        if row['ignore']: to_update['files.info.BIDS.Ignore'] = row['ignore']
 
-    if type == 'subj':
-        unique_subjs = pd.unique(data['new_subject_label'])
-        for unique_subj in unique_subjs:
-            subjects = data[data['new_subject_label'] == unique_subj]
-            for subject in subjects.iterrows():
-                # If subject doesn't exist, update this subject to have the new label and code
-                # otherwise, update sessions below it to point to this
-                existing_subj = project.subjects.find_first(f'label={unique_subj}')
-                new_subject = fw.get_subject(subject['id'])
-                if not existing_subj:
-                    new_subject.update({
+        if to_update:
+            acquisition.update(to_update)
+
+def move_sessions(subj_df,ses_df,project,fw,dry_run=False):
+    unique_subjs = pd.unique(subj_df['new_subject_label'])
+    for unique_subj in unique_subjs:
+        # dataframe of subjects that are supposed to be sessions
+        subjects = subj_df[subj_df['new_subject_label'] == unique_subj]
+        for subject in subjects.iterrows():
+            # If subject doesn't exist, update this subject to have the new label and code
+            # otherwise, update sessions below it to point to this
+            existing_subj = project.subjects.find_first(f'label={unique_subj}')
+            new_subj = fw.get_subject(subject['id'])
+            if not existing_subj:
+                if dry_run:
+                    log.info(f'NOT updating subject {new_subj} with new label, code of {unique_subj}')
+                else:
+                    log.info(f'updating subject {new_subj} with new label, code of {unique_subj}')
+                    new_subj.update({
                         'label': unique_subj,
                         'code': unique_subj
                     })
-                else:
-                    for session in new_subject.sessions.iter():
-                        session.update({
-                            # TODO: Join with the sessions csv to update new label at the same time
-                            #   if applicable
-                            'subject': new_subject
-                        })
+            else:
+                for session in new_subj.sessions.iter():
+                    to_update = {
+                        'subject': new_subj,
+                    }
+                    if ses_df[ses_df['id'] == session.id]['new_session_label']:
+                        to_update['label'] = ses_df[ses_df['id'] == session.id]['new_session_label']
+                    if dry_run:
+                        log.info(f'NOT moving session {session.label} to subject {new_subj.label}')
+                    else:
+                        # TODO: Can the subject be deleted here instead of checking for empty
+                        #   subjects afterwards?
+                        log.info(f'moving session {session.label} to subject {new_subj.label}')
+                        session.update(to_update)
 
-
-
-
-    elif type == 'ses':
-            for index, row in data.iterrows():
-                session = fw.get_session(row['id'])
-                if row['new_session_label']:
-                    session.update(label=row['new_session_label'])
-
-    elif type == 'acq':
-        for index, row in data.iterrows():
-            acquisition = fw.get_acquisition(row['id'])
-            to_update = {}
-            if row['new_acquisition_label']: to_update['label'] = row['new_acquisition_label']
-            if row['modality']: to_update['files.info.BIDS.Modality'] = row['modality']
-            if row['task']: to_update['files.info.BIDS.Task'] = row['task']
-            if row['run']: to_update['files.info.BIDS.Run'] = row['run']
-            if row['ignore']: to_update['files.info.BIDS.Ignore'] = row['ignore']
-
-            if to_update:
-                acquisition.update(to_update)
-
-    else:
-        log.error(f'Invalid CSV type: {type}.  Exiting')
-        sys.exit(1)
-
-
+def delete_empty_subjects():
