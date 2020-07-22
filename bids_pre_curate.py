@@ -1,3 +1,5 @@
+import sys
+
 import flywheel
 from utils.fly.make_file_name_safe import make_file_name_safe
 from utils.deep_dict import nested_get
@@ -16,15 +18,17 @@ def build_csv(group, proj_name):
     proj_label = make_file_name_safe(project.label)
 
     # Acquisitions
+    log.info('Building acquisitions CSV...')
     acqs = fw.get_project_acquisitions(project.id)
     data2csv(acqs, proj_label,
              keep_keys=['_id', 'label'],
              prefix='acquisition_labels',
-             column_rename=['id', 'label'],
-             user_columns=['modality', 'task', 'run', 'ignore'],
+             column_rename=['id', 'existing_acquisition_label'],
+             user_columns=['new_acquisition_label','modality', 'task', 'run', 'ignore'],
              unique=['label'])
 
     # Sessions
+    log.info('Building session CSV...')
     sess = fw.get_project_sessions(project.id)
     data2csv(sess, proj_label,
              keep_keys=['_id', ['subject', 'label'], 'label'],
@@ -33,6 +37,7 @@ def build_csv(group, proj_name):
              user_columns=['new_session_label'])
 
     # Subjects
+    log.info('Building subject CSV...')
     subj = fw.get_project_subjects(project.id)
     data2csv(subj, proj_label,
              keep_keys=['_id', 'label'],
@@ -96,3 +101,61 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
     data_df = data_df.drop_duplicates(subset=['label'])
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     data_df.to_csv(csv_file)
+
+def read_from_csv(csv_file, type='aqc', project):
+    fw = flywheel.Client()
+    conf = fw.get_config().site.api_url
+    # TODO: Need to do some validation to make sure the CSV file is in the correct format
+    #   this should be at the row level, otherwise if they put columns in wrong, it may really
+    #   mess up their whole project
+    data = pd.read_csv(csv_file)
+
+    if type == 'subj':
+        unique_subjs = pd.unique(data['new_subject_label'])
+        for unique_subj in unique_subjs:
+            subjects = data[data['new_subject_label'] == unique_subj]
+            for subject in subjects.iterrows():
+                # If subject doesn't exist, update this subject to have the new label and code
+                # otherwise, update sessions below it to point to this
+                existing_subj = project.subjects.find_first(f'label={unique_subj}')
+                new_subject = fw.get_subject(subject['id'])
+                if not existing_subj:
+                    new_subject.update({
+                        'label': unique_subj,
+                        'code': unique_subj
+                    })
+                else:
+                    for session in new_subject.sessions.iter():
+                        session.update({
+                            # TODO: Join with the sessions csv to update new label at the same time
+                            #   if applicable
+                            'subject': new_subject
+                        })
+
+
+
+
+    elif type == 'ses':
+            for index, row in data.iterrows():
+                session = fw.get_session(row['id'])
+                if row['new_session_label']:
+                    session.update(label=row['new_session_label'])
+
+    elif type == 'acq':
+        for index, row in data.iterrows():
+            acquisition = fw.get_acquisition(row['id'])
+            to_update = {}
+            if row['new_acquisition_label']: to_update['label'] = row['new_acquisition_label']
+            if row['modality']: to_update['files.info.BIDS.Modality'] = row['modality']
+            if row['task']: to_update['files.info.BIDS.Task'] = row['task']
+            if row['run']: to_update['files.info.BIDS.Run'] = row['run']
+            if row['ignore']: to_update['files.info.BIDS.Ignore'] = row['ignore']
+
+            if to_update:
+                acquisition.update(to_update)
+
+    else:
+        log.error(f'Invalid CSV type: {type}.  Exiting')
+        sys.exit(1)
+
+
