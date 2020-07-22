@@ -26,7 +26,10 @@ log.info(fw.get_config().site.api_url)
      subject = fw.get_subject(subject_id)
      sessions = subject.sessions
      if len(sessions.find()):
-         log.warning('Subject not empty, not deleting')
+         log.warning('Subject not empty: sessions still attached. Not deleting')
+         return False
+     elif len(subject.files) > 0:
+         log.warning('Subject not empty: files still attached.  Not deleting')
          return False
      else:
          fw.delete_subject(subject.id)
