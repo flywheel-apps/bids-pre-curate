@@ -1,13 +1,13 @@
 {
-  "name": "bids-app-template",
-  "label": "<Bids-App-Template>: short human-friendly name/description displayed in interface",
-  "description": "<editme Name> (<version>) longer description.",
-  "version": "0.0.0_0.2.3",
+  "name": "bids-pre-curate",
+  "label": "<Bids-Pre-Curate>: Project pre-curation for BIDS",
+  "description": "pre-curation process, which would allow the re-naming of acquisitions and classification of data based on user-input on a bulk scale",
+  "version": "0.0.0",
   "custom": {
-    "docker-image": "flywheel/bids-app-template:0.0.0_0.2.3",
+    "docker-image": "flywheel/bids-pre-curate:0.0.0",
     "gear-builder": {
-      "category": "analysis",
-      "image": "flywheel/bids-app-template:0.0.0_0.2.3"
+      "category": "utility",
+      "image": "flywheel/bids-pre-curate:0.0.0"
     },
     "flywheel": {
       "suite": "BIDS Apps"
@@ -15,8 +15,8 @@
     "license": {
       "non-commercial-use-only": false,
       "main": {
-        "name": "BSD-3-Clause",
-        "url": "https://github.com/poldracklab/mriqc/blob/0.15.1/LICENSE.txt"
+        "name": "MIT",
+        "url": ""
       },
       "dependencies": [
         {
@@ -39,145 +39,52 @@
       "base": "api-key",
       "read-only": true
     },
-    "freesurfer_license": {
-      "description": "FreeSurfer license file, provided during registration with FreeSurfer. This file will by copied to the $FSHOME directory and used during execution of the Gear.",
+    "session_table": {
+      "description": "CSV file containing sessions.",
       "base": "file",
       "optional": true
     },
-    "bidsignore": {
-      "description": "A .bidsignore file to provide to the bids-validator that this gear runs before running the main command.",
+    "subject_table": {
+      "description": "CSV file containing subjects.",
+      "base": "file",
+      "optional": true
+    },
+    "acquisition_table": {
+      "description": "CSV file containing acquisitions.",
       "base": "file",
       "optional": true
     }
   },
   "config": {
-    "empty-param": {
-      "default": "",
-      "description": "This will be passed in as an empty string when the gear is run using the SDK even if it is not provided as a config when calling gear.run().",
-      "type": "string"
-    },
-    "bool-param": {
-      "default": false,
-      "description": "some yes or no choice",
-      "type": "boolean"
-    },
-    "num-things": {
-      "description": "number of things that is important to set",
-      "optional": true,
+    "sessions_per_subject": {
+      "default": 0,
+      "description": "Number of sessions that will be collected per subject. If 0, sessions will be excluded from bids.",
       "type": "integer"
     },
-    "name-or-something": {
-      "description": "path to JSON file with settings",
+    "infer_bids": {
+      "description": "Will try to infer bids fields from classification and acquisition label (SeriesDescription) and pre-populate the output csv files with these values.",
       "optional": true,
-      "type": "string"
+      "type": "boolean"
     },
-    "threshold": {
-      "default": 3.1415926,
-      "description": "threshold eating pie",
-      "type": "number"
-    },
-    "modalities": {
-      "description": "T1w|bold|T2w",
-      "enum": [
-        "",
-        "T1w",
-        "bold",
-        "T2w"
-      ],
+    "reset_bids_info": {
+      "description": "",
       "optional": true,
-      "type": "string"
+      "type": "boolean"
     },
-    "n_cpus": {
-      "description": "Number of CPUs/cores use",
+    "reset_bids_ignore": {
+      "description": "",
       "optional": true,
-      "type": "integer"
-    },
-    "run-id": {
-      "description": "[RUN_ID [RUN_ID ...]]",
-      "optional": true,
-      "type": "string"
-    },
-    "task-id": {
-      "description": "[TASK_ID [TASK_ID ...]]",
-      "optional": true,
-      "type": "string"
-    },
-    "verbose": {
-      "default": "v",
-      "description": "increases log verbosity for each occurrence, debug level is -vvv",
-      "enum": [
-        "",
-        "v",
-        "vv",
-        "vvv"
-      ],
-      "type": "string"
-    },
-    "write-graph": {
-      "default": false,
-      "description": "Write workflow graph",
       "type": "boolean"
-    },
-    "gear-ignore-bids-errors": {
-      "default": false,
-      "description": "By default, the gear will not run if there are any BIDS errors detected.  Set this to run even if BIDS errors are detected",
-      "type": "boolean"
-    },
-    "gear-log-level": {
-      "default": "INFO",
-      "description": "Gear Log verbosity level (ERROR|WARNING|INFO|DEBUG)",
-      "type": "string",
-                        "enum": [
-                                "ERROR",
-                                "WARNING",
-                                "INFO",
-                                "DEBUG"
-                        ]
-    },
-    "gear-run-bids-validation": {
-      "default": true,
-      "description": "Gear will run BIDS validation before mriqc.  If validation fails and gear-abort-on-bids-error is true, mriq will NOT be run.",
-      "type": "boolean"
-    },
-    "gear-save-intermediate-output": {
-      "default": false,
-      "description": "Gear will save ALL intermediate output into <command>_work.zip",
-      "type": "boolean"
-    },
-    "gear-intermediate-files": {
-      "description": "Space separated list of FILES to retain from the intermediate work directory.",
-      "default": "",
-      "type": "string"
-    },
-    "gear-intermediate-folders": {
-      "description": "Space separated list of FOLDERS to retain from the intermediate work directory.",
-      "default": "",
-      "type": "string"
-    },
-    "gear-dry-run": {
-      "default": false,
-      "description": "Do everything except actually executing the command line",
-      "type": "boolean"
-    },
-    "gear-keep-output": {
-      "default": false,
-      "description": "Don't delete output.  Output is always zipped into a single file for easy download.  Choose this option to prevent output deletion after zipping.",
-      "type": "boolean"
-    },
-    "gear-FREESURFER_LICENSE": {
-      "description": "Text from license file generated during FreeSurfer registration. *Entries should be space separated*",
-      "type": "string",
-      "optional": true
-    }   
+    }
   },
   "environment": {
     "PYTHONUNBUFFERED": "1"
   },
-  "command": "python run.py",
-  "author": "Dr. Smartypants, Whatsamatter U",
+  "command": "/bin/sh",
+  "author": "Flywheel, LLC",
   "maintainer": "Flywheel <support@flywheel.io>",
   "cite": "Dewy, Cheetum, and How; The templatest BIDS app you will ever see; PLOS ONE 12(9):e0184661; doi:10.1371/journal.pone.0184661.",
   "license": "MIT",
-  "source": "https://github.com/flywheel-apps/bids-app-template",
-  "url": "https://github.com/flywheel-apps/bids-app-template"
+  "source": "https://github.com/flywheel-apps/bids-pre-curate",
+  "url": "https://github.com/flywheel-apps/bids-pre-curate"
 }
