@@ -12,27 +12,23 @@ import pprint
 log = logging.getLogger(__name__)
 
 
-def build_csv(fw,group, proj_name):
+def build_csv(acqs, subs, sess, proj_label):
     log.info(f'Starting client connection')
-    log.info(fw.get_config().site.api_url)
 
-    project = fw.projects.find_one(f'group={group},label={proj_name}')
-    proj_label = make_file_name_safe(project.label)
+    proj_label = make_file_name_safe(proj_label)
     log.info(f'Building CSV for {proj_label}')
 
     # Acquisitions
     log.info('Building acquisitions CSV...')
-    acqs = fw.get_project_acquisitions(project.id)
     data2csv(acqs, proj_label,
              keep_keys=['_id', 'label'],
              prefix='acquisition_labels',
              column_rename=['id', 'existing_acquisition_label'],
-             user_columns=['new_acquisition_label','modality', 'task', 'run', 'ignore'],
+             user_columns=['new_acquisition_label', 'modality', 'task', 'run', 'ignore'],
              unique=['label'])
 
     # Sessions
     log.info('Building session CSV...')
-    sess = fw.get_project_sessions(project.id)
     data2csv(sess, proj_label,
              keep_keys=['_id', ['subject', 'label'], 'label'],
              prefix='session_labels',
@@ -41,8 +37,7 @@ def build_csv(fw,group, proj_name):
 
     # Subjects
     log.info('Building subject CSV...')
-    subj = fw.get_project_subjects(project.id)
-    data2csv(subj, proj_label,
+    data2csv(subs, proj_label,
              keep_keys=['_id', 'label'],
              prefix='subject_codes',
              column_rename=['id', 'existing_subject_label'],
@@ -104,13 +99,14 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     data_df.to_csv(csv_file)
 
-def read_from_csv(acq_df,subj_df,ses_df, project,dry_run=False):
+
+def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
     fw = flywheel.Client()
     # TODO: Need to do some validation to make sure the CSV file is in the correct format
     #   this should be at the row level, otherwise if they put columns in wrong, it may really
     #   mess up their whole project
     # Subjects and Sessions
-    move_and_delete_subjects(subj_df, ses_df, project,fw,dry_run)
+    move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run)
     # Acquisitions
     for index, row in acq_df.iterrows():
         acquisition = fw.get_acquisition(row['id'])
@@ -134,10 +130,10 @@ def read_from_csv(acq_df,subj_df,ses_df, project,dry_run=False):
                 log.info('NOT updating file information')
             else:
                 log.info('updating file information')
-                resp = fw.modify_acquisition_file_info(acquisition.id,file.name,to_update_data)
+                resp = fw.modify_acquisition_file_info(acquisition.id, file.name, to_update_data)
 
 
-def move_and_delete_subjects(subj_df,ses_df,project,fw,dry_run=False):
+def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
     unique_subjs = pd.unique(subj_df['new_subject_label'])
     for unique_subj in unique_subjs:
         # dataframe of subjects that are supposed to be sessions
@@ -166,7 +162,7 @@ def move_and_delete_subjects(subj_df,ses_df,project,fw,dry_run=False):
                     if dry_run:
                         log.info(f'NOT moving session {session.label} to subject {new_subj.label}')
                     else:
-                        if delete_empty_subject(new_subj.id,dry_run):
+                        if delete_empty_subject(new_subj.id, dry_run):
                             log.info('Subjects deleted')
                         else:
                             log.info('Subjects not deleted.  Check Subjects empty. Exiting')
@@ -174,4 +170,3 @@ def move_and_delete_subjects(subj_df,ses_df,project,fw,dry_run=False):
 
                         log.info(f'moving session {session.label} to subject {new_subj.label}')
                         session.update(to_update)
-
