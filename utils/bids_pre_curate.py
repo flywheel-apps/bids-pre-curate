@@ -101,7 +101,6 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
     if user_columns:
         data_df = data_df.reindex(columns=data_df.columns.tolist() + user_columns)
 
-    data_df = data_df.drop_duplicates(subset=['label'])
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     data_df.to_csv(csv_file)
 
