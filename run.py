@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 """Run the gear: set up for and call command-line command."""
 
-import os
 import sys
 import pandas as pd
-import shutil
-import psutil
-import json
-from pathlib import Path
+
 
 import flywheel_gear_toolkit
 from utils import bids_pre_curate
@@ -79,10 +75,7 @@ if __name__ == "__main__":
     gtk_context = flywheel_gear_toolkit.GearToolkitContext()
 
     # Setup basic logging and log the configuration for this job
-    if gtk_context["gear-log-level"] == 'INFO':
-        gtk_context.init_logging("info")
-    else:
-        gtk_context.init_logging("debug")
+    gtk_context.init_logging()
     gtk_context.log_config()
 
     main(gtk_context)
