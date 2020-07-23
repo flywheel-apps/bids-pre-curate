@@ -10,10 +10,8 @@ import json
 from pathlib import Path
 
 import flywheel_gear_toolkit
-import bids_pre_curate
-
+from utils import bids_pre_curate
 from utils.bids.run_level import get_run_level_and_hierarchy
-
 
 
 def parse_config(context):
@@ -40,13 +38,14 @@ def parse_config(context):
 
     return conf_dict
 
+
 def validate_inputs(context):
     acq = context.get_input_path('acquisition_table')
     ses = context.get_input_path('session_table')
     sub = context.get_input_path('subject_table')
 
     if acq and ses and sub:
-        return (acq,ses,sub)
+        return (acq, ses, sub)
     elif not (acq and ses and sub):
         return ()
     else:
@@ -55,8 +54,6 @@ def validate_inputs(context):
 
 
 def main(gtk_context):
-
-    log = gtk_context.log
 
     hierarchy = get_run_level_and_hierarchy(
         gtk_context.client, gtk_context.destination["id"]
@@ -72,7 +69,7 @@ def main(gtk_context):
         acq_df = pd.read_csv(inputs[0])
         ses_df = pd.read_csv(inputs[1])
         sub_df = pd.read_csv(inputs[2])
-        bids_pre_curate.read_from_csv(acq_df,sub_df,ses_df,project)#,config.dry_run)
+        bids_pre_curate.read_from_csv(acq_df, sub_df, ses_df, project)  # ,config.dry_run)
     else:
         bids_pre_curate.build_csv(gtk_context.client, group, project_label)
 
