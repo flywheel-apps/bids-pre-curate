@@ -3,6 +3,7 @@ import sys
 import flywheel
 from flywheel.models.info_update_input import InfoUpdateInput
 from utils.fly.make_file_name_safe import make_file_name_safe
+from utils.delete_empty import delete_empty_subject
 from utils.deep_dict import nested_get
 import logging
 import pandas as pd
@@ -11,13 +12,13 @@ import pprint
 log = logging.getLogger(__name__)
 
 
-def build_csv(group, proj_name):
-    log.debug(f'Starting client connection')
-    fw = flywheel.Client()
+def build_csv(fw,group, proj_name):
+    log.info(f'Starting client connection')
+    log.info(fw.get_config().site.api_url)
 
     project = fw.projects.find_one(f'group={group},label={proj_name}')
-    log.info(f'Building CSV for {project.label}')
     proj_label = make_file_name_safe(project.label)
+    log.info(f'Building CSV for {proj_label}')
 
     # Acquisitions
     log.info('Building acquisitions CSV...')
@@ -56,7 +57,7 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
         or not to only use unique values
 
     Args:
-        data (list): list of dicts containting data
+        data (list): list of dicts containing data
         proj_label (str): project label
         keep_keys (list): list of strings or list of lists, or combination.
             This list keeps track of the keys from the acquisitions that
@@ -104,15 +105,13 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     data_df.to_csv(csv_file)
 
-def read_from_csv(acq_df,subj_df,ses_df, project,dry_run):
+def read_from_csv(acq_df,subj_df,ses_df, project,dry_run=False):
     fw = flywheel.Client()
-    conf = fw.get_config().site.api_url
     # TODO: Need to do some validation to make sure the CSV file is in the correct format
     #   this should be at the row level, otherwise if they put columns in wrong, it may really
     #   mess up their whole project
     # Subjects and Sessions
-    move_sessions(subj_df, ses_df, project,fw)
-    delete_empty_subjects()
+    move_and_delete_subjects(subj_df, ses_df, project,fw,dry_run)
     # Acquisitions
     for index, row in acq_df.iterrows():
         acquisition = fw.get_acquisition(row['id'])
@@ -139,7 +138,7 @@ def read_from_csv(acq_df,subj_df,ses_df, project,dry_run):
                 resp = fw.modify_acquisition_file_info(acquisition.id,file.name,to_update_data)
 
 
-def move_sessions(subj_df,ses_df,project,fw,dry_run=False):
+def move_and_delete_subjects(subj_df,ses_df,project,fw,dry_run=False):
     unique_subjs = pd.unique(subj_df['new_subject_label'])
     for unique_subj in unique_subjs:
         # dataframe of subjects that are supposed to be sessions
@@ -168,9 +167,12 @@ def move_sessions(subj_df,ses_df,project,fw,dry_run=False):
                     if dry_run:
                         log.info(f'NOT moving session {session.label} to subject {new_subj.label}')
                     else:
-                        # TODO: Can the subject be deleted here instead of checking for empty
-                        #   subjects afterwards?
+                        if delete_empty_subject(new_subj.id,dry_run):
+                            log.info('Subjects deleted')
+                        else:
+                            log.info('Subjects not deleted.  Check Subjects empty. Exiting')
+                            sys.exit(1)
+
                         log.info(f'moving session {session.label} to subject {new_subj.label}')
                         session.update(to_update)
 
-def delete_empty_subjects():
