@@ -1,6 +1,6 @@
 from utils.bids_pre_curate import data2csv
-def test_data2csv_normal_data():
-    data = [{'age': None,
+from utils.deep_dict import nested_get
+test_data = [{'age': None,
          'analyses': None,
          'code': 'sub-13',
          'cohort': None,
@@ -31,6 +31,10 @@ def test_data2csv_normal_data():
          'strain': None,
          'tags': [],
          'type': None}]
+
+
+def test_data2csv_normal_data():
+
     proj_label = 'test_proj'
     keep_keys = [['_id', 'label'],
                 ['_id', ['parents', 'group'], 'label'],
@@ -41,8 +45,39 @@ def test_data2csv_normal_data():
     prefixes = ['acq','sub','sess']
     user_columns = [[],['test'],['test1','test2']]
     for keep_key, column_rename, prefix, user_column in zip(keep_keys,column_renames, prefixes, user_columns):
-        path,df = data2csv(data,proj_label,prefix, column_rename,user_column, no_print=True)
+        path,df = data2csv(test_data,proj_label,keep_key,prefix, column_rename,user_column, no_print=True)
         print(path)
         print(df)
+        print('\n')
+
+def test_nested_get():
+    lvl1 = {
+        'test':'data'
+    }
+    lvl2 = {
+        'test': {
+            'test': 'data'
+        }
+    }
+    lvl3 = {
+        'test': {
+            'test': {
+                'test': 'data'
+            }
+        }
+    }
+
+    dicts = [lvl1,lvl2,lvl3]
+    keys = [['test'],['test','test'],['test','test','test']]
+    result = 'data'
+
+    for dict,key in zip(dicts,keys):
+        val = nested_get(dict,key)
+        assert val == result
+        print(f'expected: {result}, got: {val}, passed')
+
+#def test_keep_specified_keys():
+#   ['']
+test_nested_get()
 test_data2csv_normal_data()
 
