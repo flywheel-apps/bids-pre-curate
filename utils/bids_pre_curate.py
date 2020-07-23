@@ -13,6 +13,20 @@ log = logging.getLogger(__name__)
 
 
 def build_csv(acqs, subs, sess, proj_label):
+    """Wrapper for building CSVs for project
+
+        Subjects, sessions and acquisitions are passed in in the form of lists of
+        dicts.  They are then passed to data2csv with options set to be converted
+        to csv format.
+    Args:
+        acqs (list):  list of dicts containing acquisitions for the project.
+        subs (list):  list of dicts containing subjects for the project.
+        sess (list):  list of dicts containing sessions for the project
+        proj_label (str):  project name (label)
+
+    Returns:
+        n/a
+    """
     log.info(f'Starting client connection')
 
     proj_label = make_file_name_safe(proj_label)
