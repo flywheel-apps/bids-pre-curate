@@ -35,31 +35,33 @@ def build_csv(acqs, subs, sess, proj_label):
     # Acquisitions
     log.info('Building acquisitions CSV...')
     acq_file = data2csv(acqs, proj_label,
-             keep_keys=['_id', 'label'],
-             prefix='acquisition_labels',
-             column_rename=['id', 'existing_acquisition_label'],
-             user_columns=['new_acquisition_label', 'modality', 'task', 'run', 'ignore'],
-             unique=['label'])
+                        keep_keys=['_id', 'label'],
+                        prefix='acquisition_labels',
+                        column_rename=['id', 'existing_acquisition_label'],
+                        user_columns=['new_acquisition_label', 'modality', 'task', 'run', 'ignore'],
+                        unique=['label'])
 
     # Sessions
     log.info('Building session CSV...')
     sess_file = data2csv(sess, proj_label,
-             keep_keys=['_id', ['subject', 'label'], 'label'],
-             prefix='session_labels',
-             column_rename=['id', 'subject_label', 'existing_session_label'],
-             user_columns=['new_session_label'])
+                         keep_keys=['_id', ['subject', 'label'], 'label'],
+                         prefix='session_labels',
+                         column_rename=['id', 'subject_label', 'existing_session_label'],
+                         user_columns=['new_session_label'])
 
     # Subjects
     log.info('Building subject CSV...')
     sub_file = data2csv(subs, proj_label,
-             keep_keys=['_id', 'label'],
-             prefix='subject_codes',
-             column_rename=['id', 'existing_subject_label'],
-             user_columns=['new_subject_label'])
-    file_names = (acq_file,sess_file,sub_file)
+                        keep_keys=['_id', 'label'],
+                        prefix='subject_codes',
+                        column_rename=['id', 'existing_subject_label'],
+                        user_columns=['new_subject_label'])
+    file_names = (acq_file[0], sess_file[0], sub_file[0])
     return filenames
 
-def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns=[], unique=[]):
+
+def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns=[],
+             unique=[], no_print=False):
     """Creates a CSV on passed in data
 
     Create a CSV of passed in data while specifying which keys should be kept,
@@ -82,19 +84,16 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
             to add to the csv
         unique (list,optional): If specified, find unique entries on the
             given indices.
+        no_print (boolean): If true, don't print output csv's, just print
+            dataframe
 
     Returns:
-        csv_file (str): file path of the csv file written
+        tuple: if no_print,returns tuple of (csv_file,dataframe).  Otherwise
+            file path is returned in a 1-length tuple
 
     """
     # Only need to keep keys from the returned acquisitions that are important for the csv
-    kept_data = []
-    for datum in data:
-        kept_data.append({
-            (key if type(key) is str else '.'.join(key)):
-                (nested_get(datum, [key]) if type(key) is str else nested_get(datum, key))
-            for key in keep_keys
-        })
+    kept_data = keep_specified_keys(data, keep_keys)
     # Convert to dataframe for writing csv
     data_df = pd.DataFrame(kept_data)
 
@@ -112,8 +111,22 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
         data_df = data_df.reindex(columns=data_df.columns.tolist() + user_columns)
 
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
+    if no_print:
+        return (csv_file, data_df)
     data_df.to_csv(csv_file)
-    return csv_file
+    return (csv_file,)
+
+
+def keep_specified_keys(data, keep_keys):
+    kept_data = []
+    for datum in data:
+#        print(keep_keys)
+        kept_data.append({
+            (key if type(key) is str else '.'.join(key)):
+                (nested_get(datum, [key]) if type(key) is str else nested_get(datum, key))
+            for key in keep_keys
+        })
+    return kept_data
 
 
 def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
