@@ -25,7 +25,7 @@ def build_csv(acqs, subs, sess, proj_label):
         proj_label (str):  project name (label)
 
     Returns:
-        n/a
+        file_names (tuple): Tuple of filenames (full filepath) for all three csv files
     """
     log.info(f'Starting client connection')
 
@@ -34,7 +34,7 @@ def build_csv(acqs, subs, sess, proj_label):
 
     # Acquisitions
     log.info('Building acquisitions CSV...')
-    data2csv(acqs, proj_label,
+    acq_file = data2csv(acqs, proj_label,
              keep_keys=['_id', 'label'],
              prefix='acquisition_labels',
              column_rename=['id', 'existing_acquisition_label'],
@@ -43,7 +43,7 @@ def build_csv(acqs, subs, sess, proj_label):
 
     # Sessions
     log.info('Building session CSV...')
-    data2csv(sess, proj_label,
+    sess_file = data2csv(sess, proj_label,
              keep_keys=['_id', ['subject', 'label'], 'label'],
              prefix='session_labels',
              column_rename=['id', 'subject_label', 'existing_session_label'],
@@ -51,12 +51,13 @@ def build_csv(acqs, subs, sess, proj_label):
 
     # Subjects
     log.info('Building subject CSV...')
-    data2csv(subs, proj_label,
+    sub_file = data2csv(subs, proj_label,
              keep_keys=['_id', 'label'],
              prefix='subject_codes',
              column_rename=['id', 'existing_subject_label'],
              user_columns=['new_subject_label'])
-
+    file_names = (acq_file,sess_file,sub_file)
+    return filenames
 
 def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns=[], unique=[]):
     """Creates a CSV on passed in data
@@ -83,7 +84,7 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
             given indices.
 
     Returns:
-        n/a
+        csv_file (str): file path of the csv file written
 
     """
     # Only need to keep keys from the returned acquisitions that are important for the csv
@@ -112,6 +113,7 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
 
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     data_df.to_csv(csv_file)
+    return csv_file
 
 
 def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
