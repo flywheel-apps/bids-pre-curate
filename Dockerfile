@@ -14,6 +14,8 @@ WORKDIR ${FLYWHEEL}
 # Save docker environ
 ENV PYTHONUNBUFFERED 1
 
+############## DEV ONLY ##########
+COPY user.json /root/.config/flywheel/user.json
 # Copy executable/manifest to Gear
 COPY manifest.json ${FLYWHEEL}/manifest.json
 COPY utils ${FLYWHEEL}/utils
