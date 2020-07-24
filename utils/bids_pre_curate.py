@@ -35,7 +35,7 @@ def build_csv(acqs, subs, sess, proj_label):
     # Acquisitions
     log.info('Building acquisitions CSV...')
     acq_file = data2csv(acqs, proj_label,
-                        keep_keys=['_id', 'label'],
+                        keep_keys=['id', 'label'],
                         prefix='acquisition_labels',
                         column_rename=['id', 'existing_acquisition_label'],
                         user_columns=['new_acquisition_label', 'modality', 'task', 'run', 'ignore'],
@@ -44,7 +44,7 @@ def build_csv(acqs, subs, sess, proj_label):
     # Sessions
     log.info('Building session CSV...')
     sess_file = data2csv(sess, proj_label,
-                         keep_keys=['_id', ['subject', 'label'], 'label'],
+                         keep_keys=['id', ['subject', 'label'], 'label'],
                          prefix='session_labels',
                          column_rename=['id', 'subject_label', 'existing_session_label'],
                          user_columns=['new_session_label'])
@@ -52,7 +52,7 @@ def build_csv(acqs, subs, sess, proj_label):
     # Subjects
     log.info('Building subject CSV...')
     sub_file = data2csv(subs, proj_label,
-                        keep_keys=['_id', 'label'],
+                        keep_keys=['id', 'label'],
                         prefix='subject_codes',
                         column_rename=['id', 'existing_subject_label'],
                         user_columns=['new_subject_label'])
