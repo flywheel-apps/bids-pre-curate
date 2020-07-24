@@ -2,3 +2,4 @@
 .containerId
 user.json
 __pycache__
+output/
