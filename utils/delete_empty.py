@@ -1,7 +1,8 @@
-import flywheel
+import flywheel_gear_toolkit
 import logging
 
-fw = flywheel.Client('', root=True)
+context = flywheel_gear_toolkit.GearToolkitContext()
+fw = context.client
 
 log = logging.getLogger(__name__)
 

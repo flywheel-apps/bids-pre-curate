@@ -1,6 +1,6 @@
 import sys
 
-import flywheel
+import flywheel_gear_toolkit
 from flywheel.models.info_update_input import InfoUpdateInput
 from utils.fly.make_file_name_safe import make_file_name_safe
 from utils.delete_empty import delete_empty_subject
@@ -130,7 +130,8 @@ def keep_specified_keys(data, keep_keys):
 
 
 def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
-    fw = flywheel.Client()
+    context = flywheel_gear_toolkit.GearToolkitContext()
+    fw = context.client
     # TODO: Need to do some validation to make sure the CSV file is in the correct format
     #   this should be at the row level, otherwise if they put columns in wrong, it may really
     #   mess up their whole project
