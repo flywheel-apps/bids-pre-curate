@@ -4,10 +4,10 @@
   "description": "pre-curation process, which would allow the re-naming of acquisitions and classification of data based on user-input on a bulk scale",
   "version": "0.0.0",
   "custom": {
-    "docker-image": "flywheel/bids-pre-curate:0.0.0",
+    "docker-image": "flywheel/bids-pre-curate:0.0.1",
     "gear-builder": {
       "category": "utility",
-      "image": "flywheel/bids-pre-curate:0.0.0"
+      "image": "flywheel/bids-pre-curate:0.0.1"
     },
     "flywheel": {
       "suite": "BIDS Apps"
@@ -80,7 +80,7 @@
   "environment": {
     "PYTHONUNBUFFERED": "1"
   },
-  "command": "/bin/sh",
+  "command": "/flywheel/v0/run.py",
   "author": "Flywheel, LLC",
   "maintainer": "Flywheel <support@flywheel.io>",
   "cite": "Dewy, Cheetum, and How; The templatest BIDS app you will ever see; PLOS ONE 12(9):e0184661; doi:10.1371/journal.pone.0184661.",
