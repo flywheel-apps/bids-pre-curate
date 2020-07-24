@@ -1,0 +1,6 @@
+id,existing_acquisition_label,new_acquisition_label,modality,task,run,ignore
+5f11e167957ea0064bc8a8cd,test_brain,,,,,
+5f18a58e957ea00844c8a886,test,,,,,
+5f1b09f2957ea008d8c8a837,T1w,,,,,
+5f1b09f3957ea008d8c8a838,coordsystem,,,,,
+5f1b09f3957ea008b4c8a863,task-somato,,,,,
