@@ -57,7 +57,7 @@ def build_csv(acqs, subs, sess, proj_label):
                         column_rename=['id', 'existing_subject_label'],
                         user_columns=['new_subject_label'])
     file_names = (acq_file[0], sess_file[0], sub_file[0])
-    return filenames
+    return file_names
 
 
 def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns=[],

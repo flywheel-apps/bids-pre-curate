@@ -2,6 +2,8 @@
 """Run the gear: set up for and call command-line command."""
 
 import sys
+import os
+import shutil
 import pandas as pd
 
 import flywheel_gear_toolkit
@@ -71,7 +73,18 @@ def main(gtk_context):
         acqs = [acq.to_dict() for acq in fw.get_project_acquisitions(project.id)]
         sess = [ses.to_dict() for ses in fw.get_project_sessions(project.id)]
         subs = [sub.to_dict() for sub in fw.get_project_subjects(project.id)]
-        bids_pre_curate.build_csv(acqs, subs, sess, project.label)
+
+        file_names = bids_pre_curate.build_csv(acqs, subs, sess, project.label)
+        if not os.path.exists(gtk_context.output_dir):
+            try:
+                os.mkdir(gtk_context.output_dir)
+            except FileNotFoundError as e:
+                gtk_context.log.error()
+                sys.exit(1)
+        # Move tmp files to output
+        for filename in file_names:
+            output = os.path.join(gtk_context.output_dir, os.path.basename(filename))
+            shutil.move(filename, output)
 
 
 if __name__ == "__main__":
