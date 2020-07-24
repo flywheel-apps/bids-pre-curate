@@ -113,7 +113,7 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     if no_print:
         return (csv_file, data_df)
-    data_df.to_csv(csv_file)
+    data_df.to_csv(csv_file,index_label=False)
     return (csv_file,)
 
 
