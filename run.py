@@ -5,6 +5,7 @@ import sys
 import os
 import shutil
 import pandas as pd
+import pprint
 
 import flywheel_gear_toolkit
 from utils import bids_pre_curate
@@ -16,21 +17,21 @@ def parse_config(context):
     config = context.config
     if not config:
         return
-    if config.sessions_per_subject:
-        conf_dict['ses_per_sub'] = config.sessions_per_subject
-    else:
-        gtk_context.log.error('sessions_per_subject required.  Exiting')
-        sys.exit(1)
+    if config.get('sessions_per_subject'):
+        conf_dict['ses_per_sub'] = config.get('sessions_per_subject')
+    #else:
+    #    gtk_context.log.error('sessions_per_subject required.  Exiting')
+    #    sys.exit(1)
 
-    if config.infer_bids:
+    if config.get('infer_bids'):
         conf_dict['infer_bids'] = True
     else:
         conf_dict['infer_bids'] = False
-    if config.reset_bids_info:
+    if config.get('reset_bids_info'):
         conf_dict['reset_info'] = True
     else:
         conf_dict['reset_info'] = False
-    if config.reset_bids_ignore:
+    if config.get('reset_bids_ignore'):
         conf_dict['reset_ignore'] = True
     else:
         conf_dict['reset_ignore'] = False
@@ -89,6 +90,7 @@ def main(gtk_context):
 
 if __name__ == "__main__":
     gtk_context = flywheel_gear_toolkit.GearToolkitContext()
+    pprint.pprint(os.environ)
 
     # Setup basic logging and log the configuration for this job
     gtk_context.init_logging()
