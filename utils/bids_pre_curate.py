@@ -113,14 +113,14 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     if no_print:
         return (csv_file, data_df)
-    data_df.to_csv(csv_file,index_label=False,index=False)
+    data_df.to_csv(csv_file, index_label=False, index=False)
     return (csv_file,)
 
 
 def keep_specified_keys(data, keep_keys):
     kept_data = []
     for datum in data:
-#        print(keep_keys)
+        #        print(keep_keys)
         kept_data.append({
             (key if type(key) is str else '.'.join(key)):
                 (nested_get(datum, [key]) if type(key) is str else nested_get(datum, key))
@@ -137,10 +137,14 @@ def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
     #   mess up their whole project
     # Subjects and Sessions
     move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run)
+    handle_acquisitions(acq_df, fw, dry_run)
+
+
+def handle_acquisitions(acq_df, fw, dry_run=False):
     # Acquisitions
     for index, row in acq_df.iterrows():
         acquisition = fw.get_acquisition(row['id'])
-        if row['new_acquisition_label']:
+        if row.get('new_acquisition_label'):
             if dry_run:
                 log.info(f"NOT updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
             else:
@@ -151,10 +155,10 @@ def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
             to_update = {
                 'BIDS': {}
             }
-            if row['modality']: to_update.BIDS['Modality'] = row['modality']
-            if row['task']: to_update.BIDS['Task'] = row['task']
-            if row['run']: to_update.BIDS['Run'] = row['run']
-            if row['ignore']: to_update.BIDS['Ignore'] = row['ignore']
+            if row.get('modality'): to_update['BIDS']['Modality'] = row['modality']
+            if row.get('task'): to_update['BIDS']['Task'] = row['task']
+            if row.get('run'): to_update['BIDS']['Run'] = row['run']
+            if row.get('ignore'): to_update['BIDS']['Ignore'] = row['ignore']
             to_update_data = InfoUpdateInput(set=to_update)
             if dry_run:
                 log.info('NOT updating file information')
