@@ -176,8 +176,13 @@ def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
         # The following is a dataframe of subjects that are supposed to be sessions
         subjects = subj_df[subj_df['new_subject_label'] == unique_subj]
         for index, subject in subjects.iterrows():
+            # If label is the same, we can skip.
+            if subject['new_subject_label'] == subject['existing_subject_label']:
+                print('Label th same')
+                continue
             # If subject doesn't exist, update this subject to have the new label and code
             # otherwise, update sessions below it to point to this
+            existing_subj = {}
             existing_subj = project.subjects.find_first(f'label={unique_subj}')
             new_subj = fw.get_subject(subject['id'])
             if not existing_subj:
@@ -195,15 +200,16 @@ def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
                     to_update = {
                         'subject': existing_subj,
                     }
-                    #Change session name if needed
-                    csv_entry = ses_df[ses_df['id'] == session.id]
-                    if csv_entry['new_session_label']:
-                        to_update['label'] = csv_entry['new_session_label']
+                    # Change session name if needed
+                    new_label = ses_df.loc[ses_df['id'].str.match(session.id), 'new_session_label']
+                    if new_label.values[0]:
+                        to_update['label'] = new_label.values[0]
 
                     if dry_run:
                         log.info(f'NOT moving session {session.label} to subject {existing_subj.label}')
                     else:
 
+                        print(to_update)
                         log.info(f'moving session {session.label} to subject {existing_subj.label}')
                         session.update(to_update)
 
