@@ -30,11 +30,16 @@ ses_df = pd.read_csv(inputs[1]).fillna('')
 sub_df = pd.read_csv(inputs[2]).fillna('')
 
 
-print(acq_df)
-print(ses_df)
-print(sub_df)
+#print(acq_df)
+#print(ses_df)
+#print(sub_df)
 
-#utils.bids_pre_curate.read_from_csv(acq_df,sub_df,ses_df,project,dry_run=True)
-#utils.bids_pre_curate.handle_acquisitions(acq_df,gtk_context.client)
-utils.bids_pre_curate.move_and_delete_subjects(sub_df,ses_df,project,gtk_context.client,dry_run=True)
+
+def test():
+    #test_bids_curate.run()
+    utils.bids_pre_curate.handle_acquisitions(acq_df,gtk_context.client,dry_run=True)
+    utils.bids_pre_curate.move_and_delete_subjects(sub_df,ses_df,project,gtk_context.client,dry_run=True)
+    utils.bids_pre_curate.read_from_csv(acq_df,sub_df,ses_df,project)
+test()
+
 
