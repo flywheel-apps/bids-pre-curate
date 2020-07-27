@@ -26,6 +26,9 @@ def delete_empty_subject(subject_id, dry_run):
     """
     subject = fw.get_subject(subject_id)
     sessions = subject.sessions
+    if dry_run:
+        return True
+
     if len(sessions.find()):
         log.warning('Subject not empty: sessions still attached. Not deleting')
         return False
