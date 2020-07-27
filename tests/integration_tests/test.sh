@@ -7,6 +7,8 @@ fi
 rm -rf /tmp/gear
 cp -r ../../ /tmp/gear
 
+pipenv run python delete_project.py --group scien --project Nate-BIDS-pre-curation --data-only
+pipenv run python ../BIDS_popup_curation/makesession.py --group scien --project Nate-BIDS-pre-curate --subjects IVA_202,IVA_202-1,IVA_202-2
 
 cd /tmp/gear
 mkdir -p /tmp/gear/flywheel/v0
