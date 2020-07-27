@@ -159,11 +159,14 @@ def handle_acquisitions(acq_df, fw, dry_run=False):
             if row.get('task'): to_update['BIDS']['Task'] = row['task']
             if row.get('run'): to_update['BIDS']['Run'] = row['run']
             if row.get('ignore'): to_update['BIDS']['Ignore'] = row['ignore']
+            # Only update file information if there is any new information
+            if not to_update.get('BIDS'):
+                continue
             to_update_data = InfoUpdateInput(set=to_update)
             if dry_run:
-                log.info('NOT updating file information')
+                log.info(f'NOT updating file information for {file.label}')
             else:
-                log.info('updating file information')
+                log.info(f'updating file information for {file.label}')
                 resp = fw.modify_acquisition_file_info(acquisition.id, file.name, to_update_data)
 
 
