@@ -1,0 +1,3 @@
+[submodule "tests/BIDS_popup_curation"]
+	path = tests/BIDS_popup_curation
+	url = https://github.com/flywheel-apps/BIDS_popup_curation
