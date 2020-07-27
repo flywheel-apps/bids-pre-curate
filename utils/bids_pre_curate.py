@@ -173,9 +173,9 @@ def handle_acquisitions(acq_df, fw, dry_run=False):
 def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
     unique_subjs = pd.unique(subj_df['new_subject_label'])
     for unique_subj in unique_subjs:
-        # dataframe of subjects that are supposed to be sessions
+        # The following is a dataframe of subjects that are supposed to be sessions
         subjects = subj_df[subj_df['new_subject_label'] == unique_subj]
-        for subject in subjects.iterrows():
+        for index, subject in subjects.iterrows():
             # If subject doesn't exist, update this subject to have the new label and code
             # otherwise, update sessions below it to point to this
             existing_subj = project.subjects.find_first(f'label={unique_subj}')
@@ -184,26 +184,32 @@ def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
                 if dry_run:
                     log.info(f'NOT updating subject {new_subj} with new label, code of {unique_subj}')
                 else:
-                    log.info(f'updating subject {new_subj} with new label, code of {unique_subj}')
+                    log.info(f'updating new subject {new_subj} with new label, code of {unique_subj}')
                     new_subj.update({
                         'label': unique_subj,
                         'code': unique_subj
                     })
             else:
                 for session in new_subj.sessions.iter():
+                    # Change all sessions to point to the existing subject
                     to_update = {
-                        'subject': new_subj,
+                        'subject': existing_subj,
                     }
-                    if ses_df[ses_df['id'] == session.id]['new_session_label']:
-                        to_update['label'] = ses_df[ses_df['id'] == session.id]['new_session_label']
-                    if dry_run:
-                        log.info(f'NOT moving session {session.label} to subject {new_subj.label}')
-                    else:
-                        if delete_empty_subject(new_subj.id, dry_run):
-                            log.info('Subjects deleted')
-                        else:
-                            log.info('Subjects not deleted.  Check Subjects empty. Exiting')
-                            sys.exit(1)
+                    #Change session name if needed
+                    csv_entry = ses_df[ses_df['id'] == session.id]
+                    if csv_entry['new_session_label']:
+                        to_update['label'] = csv_entry['new_session_label']
 
-                        log.info(f'moving session {session.label} to subject {new_subj.label}')
+                    if dry_run:
+                        log.info(f'NOT moving session {session.label} to subject {existing_subj.label}')
+                    else:
+
+                        log.info(f'moving session {session.label} to subject {existing_subj.label}')
                         session.update(to_update)
+
+                # Once all sessions have been moved, delete this subject
+                if delete_empty_subject(new_subj.id, dry_run):
+                    log.info(f'Subject {new_subj.label} deleted')
+                else:
+                    log.info(f'Subject {new_subj.label} not deleted.  Check to make sure it is empty. Exiting')
+                    sys.exit(1)
