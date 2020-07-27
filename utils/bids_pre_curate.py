@@ -197,7 +197,7 @@ def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
                 for session in new_subj.sessions.iter():
                     # Change all sessions to point to the existing subject
                     to_update = {
-                        'subject': existing_subj,
+                        'subject': existing_subj.id,
                     }
                     # Change session name if needed
                     new_label = ses_df.loc[ses_df['id'].str.match(session.id), 'new_session_label']
