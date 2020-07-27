@@ -144,7 +144,12 @@ def test_keep_specified_keys():
 
 #def test_keep_specified_keys():
 #   ['']
-test_nested_get()
-test_keep_specified_keys()
-test_data2csv_normal_data()
+
+def run():
+    test_nested_get()
+    test_keep_specified_keys()
+    test_data2csv_normal_data()
+
+if __name__ == '__main__':
+    run()
 
