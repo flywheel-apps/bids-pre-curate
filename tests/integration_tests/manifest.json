@@ -1,0 +1,90 @@
+{
+  "name": "bids-pre-curate",
+  "label": "<Bids-Pre-Curate>: Project pre-curation for BIDS",
+  "description": "pre-curation process, which would allow the re-naming of acquisitions and classification of data based on user-input on a bulk scale",
+  "version": "0.0.0",
+  "custom": {
+    "docker-image": "flywheel/bids-pre-curate:0.0.1",
+    "gear-builder": {
+      "category": "utility",
+      "image": "flywheel/bids-pre-curate:0.0.1"
+    },
+    "flywheel": {
+      "suite": "BIDS Apps"
+    },
+    "license": {
+      "non-commercial-use-only": false,
+      "main": {
+        "name": "MIT",
+        "url": ""
+      },
+      "dependencies": [
+        {
+          "name": "Other",
+          "url": "https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Licence"
+        },
+        {
+          "name": "Other",
+          "url": "https://github.com/ANTsX/ANTs/blob/v2.2.0/COPYING.txt"
+        },
+        {
+          "name": "Other",
+          "url": "https://afni.nimh.nih.gov/pub/dist/doc/program_help/README.copyright.html"
+        }
+      ]
+    }
+  },
+  "inputs": {
+    "key": {
+      "base": "api-key",
+      "read-only": true
+    },
+    "session_table": {
+      "description": "CSV file containing sessions.",
+      "base": "file",
+      "optional": true
+    },
+    "subject_table": {
+      "description": "CSV file containing subjects.",
+      "base": "file",
+      "optional": true
+    },
+    "acquisition_table": {
+      "description": "CSV file containing acquisitions.",
+      "base": "file",
+      "optional": true
+    }
+  },
+  "config": {
+    "sessions_per_subject": {
+      "default": 0,
+      "description": "Number of sessions that will be collected per subject. If 0, sessions will be excluded from bids.",
+      "type": "integer"
+    },
+    "infer_bids": {
+      "description": "Will try to infer bids fields from classification and acquisition label (SeriesDescription) and pre-populate the output csv files with these values.",
+      "optional": true,
+      "type": "boolean"
+    },
+    "reset_bids_info": {
+      "description": "",
+      "optional": true,
+      "type": "boolean"
+    },
+    "reset_bids_ignore": {
+      "description": "",
+      "optional": true,
+      "type": "boolean"
+    }
+  },
+  "environment": {
+    "PYTHONUNBUFFERED": "1"
+  },
+  "command": "/flywheel/v0/test_run.py",
+  "author": "Flywheel, LLC",
+  "maintainer": "Flywheel <support@flywheel.io>",
+  "cite": "Dewy, Cheetum, and How; The templatest BIDS app you will ever see; PLOS ONE 12(9):e0184661; doi:10.1371/journal.pone.0184661.",
+  "license": "MIT",
+  "source": "https://github.com/flywheel-apps/bids-pre-curate",
+  "url": "https://github.com/flywheel-apps/bids-pre-curate"
+}

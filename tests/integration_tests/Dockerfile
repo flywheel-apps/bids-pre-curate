@@ -1,7 +1,29 @@
-ARG DOCKER_IMAGE_NAME
+FROM python:3.8-buster as base
 
-FROM ${DOCKER_IMAGE_NAME}
+LABEL maintainer="support@flywheel.io"
 
-COPY tests ./tests
 
-RUN pip install -r tests/requirements.txt
+RUN pip install pipenv
+
+# Make directory for flywheel spec (v0)
+ENV FLYWHEEL /flywheel/v0
+WORKDIR ${FLYWHEEL}
+
+COPY Pipfile ${FLYWHEEL}
+COPY Pipfile.lock ${FLYWHEEL}
+RUN pipenv install --system
+
+# Save docker environ
+ENV PYTHONUNBUFFERED 1
+
+############## DEV ONLY ##########
+#COPY user.json /root/.config/flywheel/user.json
+# Copy executable/manifest to Gear
+COPY manifest.json ${FLYWHEEL}/manifest.json
+COPY utils ${FLYWHEEL}/utils
+COPY run.py ${FLYWHEEL}/run.py
+COPY test_run.py ${FLYWHEEL}/test_run.py
+
+# Configure entrypoint
+RUN chmod a+x ${FLYWHEEL}/test_run.py
+ENTRYPOINT ["/flywheel/v0/test_run.py"]
