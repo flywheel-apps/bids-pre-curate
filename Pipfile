@@ -11,4 +11,4 @@ flywheel-gear-toolkit = "~=0.1.0rc4"
 pandas = "~=1.0.5"
 
 [requires]
-python_version = "2.7"
+python_version = "3.8"
