@@ -58,7 +58,7 @@ def main(gtk_context):
     #        gtk_context.client, gtk_context.destination["id"]
     #    )
     group = "scien"  # hierarchy.group
-    project_label = "Nate"  # hierarchy.project_label
+    project_label = "Nate-BIDS-pre-curate"  # hierarchy.project_label
 
     config = parse_config(gtk_context)
     inputs = validate_inputs(gtk_context)
@@ -66,9 +66,9 @@ def main(gtk_context):
     project = gtk_context.client.lookup(f'{group}/{project_label}')
     if inputs:
         # Make the id column the index for the dataframe
-        acq_df = pd.read_csv(inputs[0],index_col=0)
-        ses_df = pd.read_csv(inputs[1],index_col=0)
-        sub_df = pd.read_csv(inputs[2],index_col=0)
+        acq_df = pd.read_csv(inputs[0])
+        ses_df = pd.read_csv(inputs[1])
+        sub_df = pd.read_csv(inputs[2])
         bids_pre_curate.read_from_csv(acq_df, sub_df, ses_df, project)  # ,config.dry_run)
     else:
         fw = gtk_context.client
