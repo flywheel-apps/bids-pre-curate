@@ -26,7 +26,7 @@ def install_gear(zip_name):
     """
 
     gear_tests = "/src/tests/data/gear_tests/"
-    gear = "/flywheel/v0/"
+    gear = "/tmp"
     os.chdir(gear)  # Make sure we're in the right place (gear works in "work/" dir)
 
     print("\nRemoving previous gear...")

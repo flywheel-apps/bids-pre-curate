@@ -82,7 +82,7 @@ def test_data2csv_normal_data():
                 ['_id', ['parents', 'group'], 'label'],
                 ['_id', ['parents', 'subject'], 'label']]
     column_renames = [['id', 'existing_acquisition_label'],
-                    ['id', 'subject_label', 'existing_session_label'],
+                    ['id', 'subject_group', 'existing_session_label'],
                     ['id', 'subject_label', 'existing_session_label']]
     prefixes = ['acq','sub','sess']
     user_columns = [[],['test'],['test1','test2']]
