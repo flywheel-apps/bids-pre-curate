@@ -1,0 +1,14 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+flywheel-sdk = "~=12.1.1"
+flywheel-gear-toolkit = "~=0.1.0rc4"
+pandas = "~=1.0.5"
+
+[requires]
+python_version = "2.7"
