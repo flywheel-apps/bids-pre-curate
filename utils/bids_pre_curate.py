@@ -178,7 +178,6 @@ def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
         for index, subject in subjects.iterrows():
             # If label is the same, we can skip.
             if subject['new_subject_label'] == subject['existing_subject_label']:
-                print('Label th same')
                 continue
             # If subject doesn't exist, update this subject to have the new label and code
             # otherwise, update sessions below it to point to this
@@ -208,8 +207,6 @@ def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
                     if dry_run:
                         log.info(f'NOT moving session {session.label} to subject {existing_subj.label}')
                     else:
-
-                        print(to_update)
                         log.info(f'moving session {session.label} to subject {existing_subj.label}')
                         session.update(to_update)
 
