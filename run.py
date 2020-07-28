@@ -54,11 +54,19 @@ def validate_inputs(context):
 
 
 def main(gtk_context):
-    #    hierarchy = get_run_level_and_hierarchy(
-    #        gtk_context.client, gtk_context.destination["id"]
-    #    )
-    group = "scien"  # hierarchy.group
-    project_label = "Nate-BIDS-pre-curate"  # hierarchy.project_label
+    hierarchy = get_run_level_and_hierarchy(
+        gtk_context.client, gtk_context.destination["id"]
+    )
+    if hierarchy:
+        group = hierarchy.group
+        project_label = hierarchy.project
+    elif os.environ.get('GROUP') and os.environ.get('PROJECT'):
+        group = os.environ.get('GROUP')
+        project_label = os.environ.get('PROJECT')
+    else:
+        log.exception('Cannot determine group and project, exiting')
+        sys.exit(1)
+
 
     config = parse_config(gtk_context)
     inputs = validate_inputs(gtk_context)
