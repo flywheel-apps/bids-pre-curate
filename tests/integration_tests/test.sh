@@ -45,8 +45,8 @@ python -m pytest tests/unit_tests/test_bids_curate.py
 
 ## Pre stage 1, clean and make new project
 
-#yes y | python tests/integration_tests/delete_project.py --group scien --project Nate-BIDS-pre-curation --data-only
-#python tests/BIDS_popup_curation/makesession.py --group scien --project Nate-BIDS-pre-curate --subjects IVA_202,IVA_202-1,IVA_202-2
+yes y | python tests/integration_tests/delete_project.py --group scien --project Nate-BIDS-pre-curate --data-only
+python tests/BIDS_popup_curation/makesession.py --group scien --project Nate-BIDS-pre-curate --subjects IVA_202,IVA_202-1,IVA_202-2
 
 ##################### Stage 1 integration testing
 # Build container as production
