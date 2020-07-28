@@ -164,9 +164,9 @@ def handle_acquisitions(acq_df, fw, dry_run=False):
                 continue
             to_update_data = InfoUpdateInput(set=to_update)
             if dry_run:
-                log.info(f'NOT updating file information for {file.label}')
+                log.info(f'NOT updating file information for {file.name}')
             else:
-                log.info(f'updating file information for {file.label}')
+                log.info(f'updating file information for {file.name}')
                 resp = fw.modify_acquisition_file_info(acquisition.id, file.name, to_update_data)
 
 
@@ -186,9 +186,9 @@ def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
             new_subj = fw.get_subject(subject['id'])
             if not existing_subj:
                 if dry_run:
-                    log.info(f'NOT updating subject {new_subj} with new label, code of {unique_subj}')
+                    log.info(f'NOT updating subject {new_subj.label} with new label, code of {unique_subj}')
                 else:
-                    log.info(f'updating new subject {new_subj} with new label, code of {unique_subj}')
+                    log.info(f'updating new subject {new_subj.label} with new label, code of {unique_subj}')
                     new_subj.update({
                         'label': unique_subj,
                         'code': unique_subj
