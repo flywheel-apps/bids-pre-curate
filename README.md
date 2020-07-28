@@ -32,3 +32,15 @@ required
 * reset_bids_info (boolean)
 
 * reset_bids_ignore (boolean)
+
+## Testing
+From the root directory of the project run `./tests/integration_tests/test.sh`.  This script will do the following:
+1. Generate (if needed) and install requirements with pipenv
+2. Copy the project directory to `/tmp/gear`
+3. Run unit tests
+4. Remove and re-populate the project '$GROUP/$PROJECT' with dummy data in need of pre-curation
+5. Build the docker image and run phase 1 to export CSV
+6. Edit the CSVs to rename files trivially
+7. Build the docker container for the integration test and run phase 2 (renaming the files and updating metadata) 
+
+After running the script, '$GROUP/$PROJECT' should be named correctly and have metadata uploaded.
