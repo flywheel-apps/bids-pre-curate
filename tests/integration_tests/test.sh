@@ -1,9 +1,9 @@
 #!/bin/bash
 # Pull project creation script
+GROUP='scien'
+PROJECT='Nate-BIDS-pre-curate'
 git submodule update
-cwd=$(pwd)
-PYTHONPATH=$cwd:$PYTHONPATH
-echo "$PYTHONPATH"
+
 GEAR_DIR=/tmp/gear
 # Create requirements
 pipenv run pip freeze > tests/integration_tests/requirements.txt
@@ -45,8 +45,8 @@ python -m pytest tests/unit_tests/test_bids_curate.py
 
 ## Pre stage 1, clean and make new project
 
-yes y | python tests/integration_tests/delete_project.py --group scien --project Nate-BIDS-pre-curate --data-only
-python tests/BIDS_popup_curation/makesession.py --group scien --project Nate-BIDS-pre-curate --subjects IVA_202,IVA_202-1,IVA_202-2
+yes y | python tests/integration_tests/delete_project.py --group "$GROUP" --project "$PROJECT" --data-only
+python tests/BIDS_popup_curation/makesession.py --group "$GROUP" --project "$PROJECT" --subjects IVA_202,IVA_202-1,IVA_202-2
 
 ##################### Stage 1 integration testing
 # Build container as production
@@ -59,15 +59,15 @@ cd $GEAR_DIR
 mkdir input
 cp flywheel/v0/output/* input/
 python tests/integration_tests/populate_csv.py --sub-name IVA_202  \
-  --acquisitions input/acquisition_labels_Nate-BIDS-pre-curate.csv \
-  --subjects input/subject_codes_Nate-BIDS-pre-curate.csv \
-  --sessions input/session_labels_Nate-BIDS-pre-curate.csv
+  --acquisitions input/acquisition_labels_$PROJECT.csv \
+  --subjects input/subject_codes_$PROJECT.csv \
+  --sessions input/session_labels_$PROJECT.csv
 
 ##################### Stage 2 integration testing
 build_container $1 --test
 cd $GEAR_DIR/flywheel/v0
 
-fw gear local --acquisition_table ../../input/acquisition_labels_Nate-BIDS-pre-curate.csv \
-  --session_table ../../input/session_labels_Nate-BIDS-pre-curate.csv \
-  --subject_table ../../input/subject_codes_Nate-BIDS-pre-curate.csv
+fw gear local --acquisition_table ../../input/acquisition_labels_$PROJECT.csv \
+  --session_table ../../input/session_labels_$PROJECT.csv \
+  --subject_table ../../input/subject_codes_$PROJECT.csv
 

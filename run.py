@@ -8,6 +8,7 @@ import pandas as pd
 import pprint
 
 import flywheel_gear_toolkit
+from flywheel.rest import ApiException
 from utils import bids_pre_curate
 from utils.bids.run_level import get_run_level_and_hierarchy
 
@@ -54,18 +55,18 @@ def validate_inputs(context):
 
 
 def main(gtk_context):
+    log = gtk_context.log
     hierarchy = get_run_level_and_hierarchy(
         gtk_context.client, gtk_context.destination["id"]
     )
-    if hierarchy:
-        group = hierarchy.group
-        project_label = hierarchy.project
-    elif os.environ.get('GROUP') and os.environ.get('PROJECT'):
-        group = os.environ.get('GROUP')
-        project_label = os.environ.get('PROJECT')
+    if hierarchy['group'] and hierarchy['project_label']:
+        group = hierarchy['group']
+        project_label = hierarchy['project_label']
     else:
-        log.exception('Cannot determine group and project, exiting')
-        sys.exit(1)
+        log.exception('Unable to determine run level and hierarchy, exiting')
+        #sys.exit(1)
+        group = 'scien'
+        project_label = 'Nate-BIDS-pre-curate'
 
 
     config = parse_config(gtk_context)
