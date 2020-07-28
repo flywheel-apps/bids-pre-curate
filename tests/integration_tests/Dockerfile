@@ -2,16 +2,13 @@ FROM python:3.8-buster as base
 
 LABEL maintainer="support@flywheel.io"
 
-
-RUN pip install pipenv
+COPY requirements.txt /tmp
+RUN pip install -r /tmp/requirements.txt
 
 # Make directory for flywheel spec (v0)
 ENV FLYWHEEL /flywheel/v0
 WORKDIR ${FLYWHEEL}
 
-COPY Pipfile ${FLYWHEEL}
-COPY Pipfile.lock ${FLYWHEEL}
-RUN pipenv install --system
 
 # Save docker environ
 ENV PYTHONUNBUFFERED 1
