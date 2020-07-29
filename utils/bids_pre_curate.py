@@ -145,6 +145,7 @@ def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
 def handle_acquisitions(acq_df, fw, dry_run=False):
     # Acquisitions
     for index, row in acq_df.iterrows():
+        # TODO: fw.get_project_acquisitions.find().iter()
         acquisition = fw.get_acquisition(row['id'])
         if row.get('new_acquisition_label'):
             if dry_run:
