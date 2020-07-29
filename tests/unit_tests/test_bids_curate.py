@@ -1,6 +1,12 @@
 from utils.bids_pre_curate import data2csv
 from utils.deep_dict import nested_get
 from utils.bids_pre_curate import keep_specified_keys
+from tests.BIDS_popup_curation.acquisitions import acquistions_object
+from tests.BIDS_popup_curation.sessions import session_object
+import flywheel
+import pandas as pd
+import numpy as np
+
 test_data = [{'age': None,
          'analyses': None,
          'code': 'sub-13',
@@ -75,15 +81,15 @@ test_data = [{'age': None,
 
 
 
-def test_data2csv_normal_data():
+def test_data2csv_dummy_data():
 
     proj_label = 'test_proj'
-    keep_keys = [['_id', 'label'],
-                ['_id', ['parents', 'group'], 'label'],
-                ['_id', ['parents', 'subject'], 'label']]
-    column_renames = [['id', 'existing_acquisition_label'],
-                    ['id', 'subject_group', 'existing_session_label'],
-                    ['id', 'subject_label', 'existing_session_label']]
+    keep_keys = [['label'],
+                [['parents', 'group'], 'label'],
+                [['parents', 'subject'], 'label']]
+    column_renames = [['existing_acquisition_label'],
+                    ['subject_group', 'existing_session_label'],
+                    ['subject_label', 'existing_session_label']]
     prefixes = ['acq','sub','sess']
     user_columns = [[],['test'],['test1','test2']]
     for keep_key, column_rename, prefix, user_column in zip(keep_keys,column_renames, prefixes, user_columns):
@@ -91,6 +97,39 @@ def test_data2csv_normal_data():
         print(path)
         print(df)
         print('\n')
+
+def test_data2csv_acq_duplicate(group='scien',project='Nate-BIDS-pre-curate'):
+    fw = flywheel.Client()
+    proj = fw.lookup(f'{group}/{project}')
+    acqs = [acq.to_dict() for acq in fw.get_project_acquisitions(proj.id)]
+    path,df = data2csv(acqs, project,
+                        keep_keys=['label'],
+                        prefix='acquisition_labels',
+                        column_rename=['existing_acquisition_label'],
+                        user_columns=['new_acquisition_label', 'modality', 'task', 'run', 'ignore'],
+                        unique=['label'],no_print=True)
+    supposedly_unique = np.sort(df['existing_acquisition_label'].values)
+    unique = np.unique(pd.DataFrame.from_records(acquistions_object)['label'].values)
+    comparison = unique == supposedly_unique
+    assert comparison.all()
+
+
+def test_data2csv_acq_duplicate(group='scien',project='Nate-BIDS-pre-curate'):
+    fw = flywheel.Client()
+    proj = fw.lookup(f'{group}/{project}')
+    sess = [ses.to_dict() for ses in fw.get_project_sessions(proj.id)]
+    path, df = data2csv(sess, project,
+                         keep_keys=[['subject', 'label'], 'label'],
+                         prefix='session_labels',
+                         column_rename=['subject_label', 'existing_session_label'],
+                         user_columns=['new_session_label'],
+                         unique=['existing_session_label'])
+
+    supposedly_unique = np.sort(df['existing_session_label'].values)
+    unique = np.unique(pd.DataFrame.from_records(session_object)['label'].values)
+    comparison = unique == supposedly_unique
+    assert comparison.all()
+
 
 def test_nested_get():
     lvl1 = {
@@ -145,10 +184,6 @@ def test_keep_specified_keys():
 #def test_keep_specified_keys():
 #   ['']
 
-def run():
-    test_nested_get()
-    test_keep_specified_keys()
-    test_data2csv_normal_data()
 
 if __name__ == '__main__':
     run()
