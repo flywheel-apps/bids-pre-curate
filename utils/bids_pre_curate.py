@@ -44,10 +44,12 @@ def build_csv(acqs, subs, sess, proj_label):
     # Sessions
     log.info('Building session CSV...')
     sess_file = data2csv(sess, proj_label,
-                         keep_keys=['id', ['subject', 'label'], 'label'],
+                         keep_keys=['label'],
                          prefix='session_labels',
-                         column_rename=['id', 'subject_label', 'existing_session_label'],
-                         user_columns=['new_session_label'])
+                         column_rename=['existing_session_label'],
+                         user_columns=['new_session_label'],
+                         unique=['label'])
+
 
     # Subjects
     log.info('Building subject CSV...')
