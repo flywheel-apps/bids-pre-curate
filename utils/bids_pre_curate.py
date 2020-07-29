@@ -35,9 +35,9 @@ def build_csv(acqs, subs, sess, proj_label):
     # Acquisitions
     log.info('Building acquisitions CSV...')
     acq_file = data2csv(acqs, proj_label,
-                        keep_keys=['id', 'label'],
+                        keep_keys=['label'],
                         prefix='acquisition_labels',
-                        column_rename=['id', 'existing_acquisition_label'],
+                        column_rename=['existing_acquisition_label'],
                         user_columns=['new_acquisition_label', 'modality', 'task', 'run', 'ignore'],
                         unique=['label'])
 
@@ -98,7 +98,7 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
     data_df = pd.DataFrame(kept_data)
 
     if unique:
-        data_df.drop_duplicates(subset=unique)
+        data_df.drop_duplicates(subset=unique,inplace=True)
     # Rename _id to id
     if column_rename:
         # Assuming the user can't modify this, we don't need to catch this error
