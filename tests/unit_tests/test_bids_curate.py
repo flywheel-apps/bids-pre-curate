@@ -112,23 +112,25 @@ def test_data2csv_acq_duplicate(group='scien',project='Nate-BIDS-pre-curate'):
     unique = np.unique(pd.DataFrame.from_records(acquistions_object)['label'].values)
     comparison = unique == supposedly_unique
     assert comparison.all()
+    assert (df.columns == ['existing_acquisition_label','new_acquisition_label', 'modality', 'task', 'run', 'ignore']).all()
 
 
-def test_data2csv_acq_duplicate(group='scien',project='Nate-BIDS-pre-curate'):
+def test_data2csv_ses_duplicate(group='scien',project='Nate-BIDS-pre-curate'):
     fw = flywheel.Client()
     proj = fw.lookup(f'{group}/{project}')
     sess = [ses.to_dict() for ses in fw.get_project_sessions(proj.id)]
     path, df = data2csv(sess, project,
-                         keep_keys=[['subject', 'label'], 'label'],
+                         keep_keys=['label'],
                          prefix='session_labels',
-                         column_rename=['subject_label', 'existing_session_label'],
+                         column_rename=['existing_session_label'],
                          user_columns=['new_session_label'],
-                         unique=['existing_session_label'])
+                         unique=['label'],no_print=True)
 
     supposedly_unique = np.sort(df['existing_session_label'].values)
     unique = np.unique(pd.DataFrame.from_records(session_object)['label'].values)
     comparison = unique == supposedly_unique
     assert comparison.all()
+    assert (df.columns == ['existing_session_label', 'new_session_label']).all()
 
 
 def test_nested_get():
@@ -184,6 +186,14 @@ def test_keep_specified_keys():
 #def test_keep_specified_keys():
 #   ['']
 
+def run():
+    test_data2csv_dummy_data()
+    test_data2csv_acq_duplicate()
+    test_nested_get()
+
+    test_keep_specified_keys()
+
+    test_data2csv_ses_duplicate()
 
 if __name__ == '__main__':
     run()
