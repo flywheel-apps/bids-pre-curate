@@ -5,12 +5,14 @@ PROJECT='Nate-BIDS-pre-curate'
 git submodule update
 
 GEAR_DIR=/tmp/gear
-# Create requirements
-pipenv run pip freeze > tests/integration_tests/requirements.txt
-# Remove local requirements
-sed -i '/^-e/d' tests/integration_tests/requirements.txt
-# Install requirements
-pip install --user -r tests/integration_tests/requirements.txt
+if [[! -a tests/integration_tests/requirements.txt ]]; then
+  # Create requirements
+  pipenv run pip freeze > tests/integration_tests/requirements.txt
+  # Remove local requirements
+  sed -i '/^-e/d' tests/integration_tests/requirements.txt
+  # Install requirements
+  pip install --user -r tests/integration_tests/requirements.txt
+fi
 
 sudo rm -rf $GEAR_DIR
 cp -r . $GEAR_DIR
