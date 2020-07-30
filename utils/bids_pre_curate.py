@@ -29,7 +29,7 @@ def build_csv(acqs, subs, sess, proj_label):
     """
     log.info(f'Starting client connection')
 
-    #proj_label = make_file_name_safe(proj_label)
+    # proj_label = make_file_name_safe(proj_label)
     log.info(f'Building CSV for {proj_label}')
 
     # Acquisitions
@@ -147,22 +147,35 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
     for index, row in acq_df.iterrows():
         # Since len(rows) != len(project.acquisitions), need to find all acquisitions
         #   in the project for each row in the acquisition dataframe.
-        acquisitions_for_row = fw.acquisitions.find(f"parents.project={project.id},label={row['existing_acquisition_label']}")
-        #print(row['existing_acquisition_label'],len(acquisitions_for_row))
+        acquisitions_for_row = fw.acquisitions.find(
+            f"parents.project={project.id},label={row['existing_acquisition_label']}")
+        # print(row['existing_acquisition_label'],len(acquisitions_for_row))
 
         for acquisition in acquisitions_for_row:
+            if acquisition.label != row['existing_acquisition_label']:
+                log.exception(f"""Existing acquisition label {row['existing_acquisition_label']} 
+                               doesn't match found label {acquisition.label}, please check
+                               that existing acquisition labels didn't change. Exiting""")
+                sys.exit(1)
+            # If acquisition name should change
             if row.get('new_acquisition_label'):
-                new_acq_name = make_file_name_safe(row['new_acquisition_label'],'-')
-                if row.get('ignore') and row['ignore'] in ['true','True','yes']:
-                    # Ignore acquisition
-                    new_acq_name += '_ignore'
+                new_acq_name = make_file_name_safe(row['new_acquisition_label'], '-')
+            elif row.get('existing_acquisition_label') != make_file_name_safe(row.get('existing_acquisition_label')):
+                new_acq_name = make_file_name_safe(row['existing_acquisition_label'], '-')
+            else:
+                new_acq_name = row['existing_acquisition_label']
+
+            if row.get('ignore') and row['ignore'] in ['true', 'True', 'yes']:
+                new_acq_name += '_ignore'
+
+            if new_acq_name == row['existing_acquisition_label']:
+                log.info(f"{row['existing_acquisition_label']} did not change, not updating")
+            else:
                 if dry_run:
-                    log.info(
-                        f"NOT updating acquisition label from {acquisition.label} to {new_acq_name}")
+                    log.info(f"NOT updating acquisition label from {acquisition.label} to {new_acq_name}")
                 else:
                     log.info(f"updating acquisition label from {acquisition.label} to {new_acq_name}")
                     acquisition.update({'label': new_acq_name})
-
             for file in acquisition.files:
                 to_update = {
                     'BIDS': {}
@@ -191,7 +204,15 @@ def handle_sessions(ses_df, fw, project, dry_run=False):
         sessions_for_row = fw.sessions.find(f"parents.project={project.id},label={row['existing_session_label']}")
         for session in sessions_for_row:
             if row.get('new_session_label'):
-                new_ses_name = make_file_name_safe(row['new_session_label'],'-')
+                new_ses_name = make_file_name_safe(row['new_session_label'], '-')
+            elif row['existing_session_label'] != make_file_name_safe(row['existing_session_label'], '-'):
+                new_ses_name = make_file_name_safe(row['existing_session_label'], '-')
+            else:
+                new_ses_name = row['existing_session_label']
+
+            if row['existing_session_label'] == new_ses_name:
+                log.info(f"{row['existing_session_label']} did not change, not updating")
+            else:
                 if dry_run:
                     log.info(f"NOT updating session label from {session.label} to {new_ses_name}")
                 else:
@@ -203,7 +224,7 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
     # new_subject_label column should be all unique subjects
     unique_subjs = pd.unique(subj_df['new_subject_label'])
     for unique_subj in unique_subjs:
-        unique_subj = make_file_name_safe(unique_subj,'-')
+        unique_subj = make_file_name_safe(unique_subj, '-')
         # Iterate over existing subjects that are supposed to have the same new_subject_label
         #   These are sessions that were misnamed and entered as subjects.
         #   All of these *subjects*  need to be converted to sessions under the new_subject_label subject
