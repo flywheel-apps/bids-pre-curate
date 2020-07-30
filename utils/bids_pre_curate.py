@@ -139,7 +139,7 @@ def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
     # Subjects and Sessions
     handle_acquisitions(acq_df, fw, project, dry_run)
     handle_sessions(ses_df, fw, project, dry_run)
-    handle_subjects(subj_df, project, fw, dry_run)
+    handle_subjects(subj_df, fw, project, dry_run)
 
 
 def handle_acquisitions(acq_df, fw, project, dry_run=False):
@@ -193,7 +193,7 @@ def handle_sessions(ses_df, fw, project, dry_run=False):
                     session.update({'label': row['new_session_label']})
 
 
-def handle_subjects(subj_df, project, fw, dry_run=False):
+def handle_subjects(subj_df, fw, project, dry_run=False):
     # new_subject_label column should be all unique subjects
     unique_subjs = pd.unique(subj_df['new_subject_label'])
     for unique_subj in unique_subjs:
