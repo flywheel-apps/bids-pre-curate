@@ -5,7 +5,7 @@ PROJECT='Nate-BIDS-pre-curate'
 git submodule update
 
 GEAR_DIR=/tmp/gear
-if [[! -a tests/integration_tests/requirements.txt ]]; then
+if [[ ! -a tests/integration_tests/requirements.txt ]]; then
   # Create requirements
   pipenv run pip freeze > tests/integration_tests/requirements.txt
   # Remove local requirements
