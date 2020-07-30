@@ -193,7 +193,8 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
                 else:
                     log.info(f'updating file information for {file.name}')
                     resp = fw.modify_acquisition_file_info(acquisition.id, file.name, to_update_data)
-                    print(resp)
+                    if not resp['modified']:
+                        log.exception(f'Problem updating file {file.name}')
 
 
 def handle_sessions(ses_df, fw, project, dry_run=False):
