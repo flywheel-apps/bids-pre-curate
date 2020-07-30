@@ -137,6 +137,9 @@ def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
     #   this should be at the row level, otherwise if they put columns in wrong, it may really
     #   mess up their whole project
     # Subjects and Sessions
+    acq_df.fillna('',inplace=True)
+    ses_df.fillna('',inplace=True)
+    subj_df.fillna('',inplace=True)
     handle_acquisitions(acq_df, fw, project, dry_run)
     handle_sessions(ses_df, fw, project, dry_run)
     handle_subjects(subj_df, fw, project, dry_run)
@@ -222,6 +225,7 @@ def handle_sessions(ses_df, fw, project, dry_run=False):
 
 
 def handle_subjects(subj_df, fw, project, dry_run=False):
+    subj_df.loc[subj_df['new_subject_label'] == '','new_subject_label'] = subj_df['existing_subject_label']
     # new_subject_label column should be all unique subjects
     unique_subjs = pd.unique(subj_df['new_subject_label'])
     for unique_subj in unique_subjs:
