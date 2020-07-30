@@ -50,7 +50,6 @@ def build_csv(acqs, subs, sess, proj_label):
                          user_columns=['new_session_label'],
                          unique=['label'])
 
-
     # Subjects
     log.info('Building subject CSV...')
     sub_file = data2csv(subs, proj_label,
@@ -100,7 +99,7 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
     data_df = pd.DataFrame(kept_data)
 
     if unique:
-        data_df.drop_duplicates(subset=unique,inplace=True)
+        data_df.drop_duplicates(subset=unique, inplace=True)
     # Rename _id to id
     if column_rename:
         # Assuming the user can't modify this, we don't need to catch this error
@@ -138,20 +137,23 @@ def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
     #   this should be at the row level, otherwise if they put columns in wrong, it may really
     #   mess up their whole project
     # Subjects and Sessions
-    move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run)
     handle_acquisitions(acq_df, fw, project, dry_run)
+    handle_sessions(ses_df, fw, project, dry_run)
+    handle_subjects(subj_df, project, fw, dry_run)
 
 
 def handle_acquisitions(acq_df, fw, project, dry_run=False):
     # Acquisitions
     for index, row in acq_df.iterrows():
-        # TODO: fw.get_project_acquisitions.find().iter()
+        # Since len(rows) != len(project.acquisitions), need to find all acquisitions
+        #   in the project for each row in the acquisition dataframe.
         acquisitions_for_row = fw.get_project_acsquisitions(project.label).find(
-                                    f"label={row['existing_acquisition_label']}")
+            f"label={row['existing_acquisition_label']}")
         for acquisition in acquisitions_for_row.iter():
             if row.get('new_acquisition_label'):
                 if dry_run:
-                    log.info(f"NOT updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
+                    log.info(
+                        f"NOT updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
                 else:
                     log.info(f"updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
                     acquisition.update({'label': row['new_acquisition_label']})
@@ -176,23 +178,38 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
                     print(resp)
 
 
-def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
+def handle_sessions(ses_df, fw, project, dry_run=False):
+    # Sessions
+    for index, row in ses_df.iterrows():
+        # Since len(rows) != len(project.sessions), need to find all sessions
+        #   in the project for each row in the session dataframe.
+        sessions_for_row = fw.get_project_sessions(project.label).find(
+            f"label={row['existing_session_label']}")
+        for session in sessions_for_row.iter():
+            if row.get('new_session_label'):
+                if dry_run:
+                    log.info(f"NOT updating session label from {session.label} to {row['new_session_label']}")
+                else:
+                    log.info(f"updating session label from {session.label} to {row['new_session_label']}")
+                    session.update({'label': row['new_session_label']})
+
+
+def handle_subjects(subj_df, project, fw, dry_run=False):
     # new_subject_label column should be all unique subjects
     unique_subjs = pd.unique(subj_df['new_subject_label'])
     for unique_subj in unique_subjs:
         # Iterate over existing subjects that are supposed to have the same new_subject_label
         #   These are sessions that were misnamed and entered as subjects.
-        #   All of these *subjects*  need to be converted to sessions under the new_subject_label
-        subjects = subj_df[subj_df['new_subject_label'] == unique_subj]
-        for index, subject in subjects.iterrows():
+        #   All of these *subjects*  need to be converted to sessions under the new_subject_label subject
+        subjects_to_be_moved = subj_df[subj_df['new_subject_label'] == unique_subj]
+        for index, subject_to_be_moved in subjects_to_be_moved.iterrows():
             # If label is the same, we can skip.
-            if subject['new_subject_label'] == subject['existing_subject_label']:
+            if subject_to_be_moved['new_subject_label'] == subject_to_be_moved['existing_subject_label']:
                 continue
             # If subject doesn't exist, update this subject to have the new label and code
             # otherwise, update sessions below it to point to this
-            existing_subj = {}
             existing_subj = project.subjects.find_first(f'label={unique_subj}')
-            new_subj = fw.get_subject(subject['id'])
+            new_subj = fw.get_subject(subject_to_be_moved['id'])
             if not existing_subj:
                 if dry_run:
                     log.info(f'NOT updating subject {new_subj.label} with new label, code of {unique_subj}')
@@ -210,10 +227,6 @@ def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
                             '_id': existing_subj.id
                         }
                     }
-                    # Change session name if needed
-                    new_label = ses_df.loc[ses_df['id'].str.match(session.id), 'new_session_label']
-                    if new_label.values[0]:
-                        to_update['label'] = new_label.values[0]
 
                     if dry_run:
                         log.info(f'NOT moving session {session.label} to subject {existing_subj.label}')
