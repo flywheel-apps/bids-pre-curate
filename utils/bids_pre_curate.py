@@ -139,44 +139,50 @@ def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
     #   mess up their whole project
     # Subjects and Sessions
     move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run)
-    handle_acquisitions(acq_df, fw, dry_run)
+    handle_acquisitions(acq_df, fw, project, dry_run)
 
 
-def handle_acquisitions(acq_df, fw, dry_run=False):
+def handle_acquisitions(acq_df, fw, project, dry_run=False):
     # Acquisitions
     for index, row in acq_df.iterrows():
         # TODO: fw.get_project_acquisitions.find().iter()
-        acquisition = fw.get_acquisition(row['id'])
-        if row.get('new_acquisition_label'):
-            if dry_run:
-                log.info(f"NOT updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
-            else:
-                log.info(f"updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
-                acquisition.update({'label': row['new_acquisition_label']})
+        acquisitions_for_row = fw.get_project_acsquisitions(project.label).find(
+                                    f"label={row['existing_acquisition_label']}")
+        for acquisition in acquisitions_for_row.iter():
+            if row.get('new_acquisition_label'):
+                if dry_run:
+                    log.info(f"NOT updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
+                else:
+                    log.info(f"updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
+                    acquisition.update({'label': row['new_acquisition_label']})
 
-        for file in acquisition.files:
-            to_update = {
-                'BIDS': {}
-            }
-            if row.get('modality'): to_update['BIDS']['Modality'] = row['modality']
-            if row.get('task'): to_update['BIDS']['Task'] = row['task']
-            if row.get('run'): to_update['BIDS']['Run'] = row['run']
-            if row.get('ignore'): to_update['BIDS']['Ignore'] = row['ignore']
-            # Only update file information if there is any new information
-            if not to_update.get('BIDS'):
-                continue
-            to_update_data = InfoUpdateInput(set=to_update)
-            if dry_run:
-                log.info(f'NOT updating file information for {file.name}')
-            else:
-                log.info(f'updating file information for {file.name}')
-                resp = fw.modify_acquisition_file_info(acquisition.id, file.name, to_update_data)
+            for file in acquisition.files:
+                to_update = {
+                    'BIDS': {}
+                }
+                if row.get('modality'): to_update['BIDS']['Modality'] = row['modality']
+                if row.get('task'): to_update['BIDS']['Task'] = row['task']
+                if row.get('run'): to_update['BIDS']['Run'] = row['run']
+                if row.get('ignore'): to_update['BIDS']['Ignore'] = row['ignore']
+                # Only update file information if there is any new information
+                if not to_update.get('BIDS'):
+                    continue
+                to_update_data = InfoUpdateInput(set=to_update)
+                if dry_run:
+                    log.info(f'NOT updating file information for {file.name}')
+                else:
+                    log.info(f'updating file information for {file.name}')
+                    resp = fw.modify_acquisition_file_info(acquisition.id, file.name, to_update_data)
+                    print(resp)
 
 
 def move_and_delete_subjects(subj_df, ses_df, project, fw, dry_run=False):
+    # new_subject_label column should be all unique subjects
     unique_subjs = pd.unique(subj_df['new_subject_label'])
     for unique_subj in unique_subjs:
-        # The following is a dataframe of subjects that are supposed to be sessions
+        # Iterate over existing subjects that are supposed to have the same new_subject_label
+        #   These are sessions that were misnamed and entered as subjects.
+        #   All of these *subjects*  need to be converted to sessions under the new_subject_label
         subjects = subj_df[subj_df['new_subject_label'] == unique_subj]
         for index, subject in subjects.iterrows():
             # If label is the same, we can skip.
