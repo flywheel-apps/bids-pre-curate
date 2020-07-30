@@ -147,7 +147,8 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
     for index, row in acq_df.iterrows():
         # Since len(rows) != len(project.acquisitions), need to find all acquisitions
         #   in the project for each row in the acquisition dataframe.
-        acquisitions_for_row = fw.acquisitions.find(f"project={project.label},label={row['existing_acquisition_label']}")
+        acquisitions_for_row = fw.acquisitions.find(f"parents.project={project.id},label={row['existing_acquisition_label']}")
+        #print(row['existing_acquisition_label'],len(acquisitions_for_row))
 
         for acquisition in acquisitions_for_row:
             if row.get('new_acquisition_label'):
@@ -183,7 +184,7 @@ def handle_sessions(ses_df, fw, project, dry_run=False):
     for index, row in ses_df.iterrows():
         # Since len(rows) != len(project.sessions), need to find all sessions
         #   in the project for each row in the session dataframe.
-        sessions_for_row = fw.sessions.find(f"project={project.label},label={row['existing_session_label']}")
+        sessions_for_row = fw.sessions.find(f"parents.project={project.id},label={row['existing_session_label']}")
         for session in sessions_for_row:
             if row.get('new_session_label'):
                 if dry_run:
@@ -235,7 +236,10 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
 
                 # Once all sessions have been moved, delete this subject
                 if delete_empty_subject(new_subj.id, dry_run):
-                    log.info(f'Subject {new_subj.label} deleted')
+                    if dry_run:
+                        log.info(f'Subject {new_subj.label} NOT deleted')
+                    else:
+                        log.info(f'Subject {new_subj.label} deleted')
                 else:
-                    log.info(f'Subject {new_subj.label} not deleted.  Check to make sure it is empty. Exiting')
+                    log.info(f'Subject {new_subj.label} NOT deleted.  Check to make sure it is empty. Exiting')
                     sys.exit(1)
