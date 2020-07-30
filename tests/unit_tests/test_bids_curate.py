@@ -1,11 +1,19 @@
-from utils.bids_pre_curate import data2csv
 from utils.deep_dict import nested_get
-from utils.bids_pre_curate import keep_specified_keys
+from utils.bids_pre_curate import (
+    data2csv,
+    keep_specified_keys,
+    handle_sessions,
+    handle_acquisitions,
+    handle_subjects
+)
 from tests.BIDS_popup_curation.acquisitions import acquistions_object
 from tests.BIDS_popup_curation.sessions import session_object
 import flywheel
+import pytest
 import pandas as pd
 import numpy as np
+import os
+from pathlib import Path
 
 test_data = [{'age': None,
          'analyses': None,
@@ -182,6 +190,37 @@ def test_keep_specified_keys():
             assert type(kept_dict) is dict
             assert kept_dict == exp
 
+def test_handle_acquisitions_no_changes(group='scien',project='Nate-BIDS-pre-curate'):
+    fw = flywheel.Client()
+    proj = fw.lookup(f'{group}/{project}')
+    path = Path(__file__).parents[1] / 'assets/project/acquisition_labels_Nate-BIDS-pre-curate.csv'
+    acq_df = pd.read_csv(path.resolve())
+    handle_acquisitions(acq_df,fw,proj,dry_run=True)
+    # This test only checks for errors, so if we get here, we can assert True
+    # Integration testing checks for functionality
+    assert True
+
+def test_handle_sessions_no_changes(group='scien',project='Nate-BIDS-pre-curate'):
+    fw = flywheel.Client()
+    proj = fw.lookup(f'{group}/{project}')
+    path = Path(__file__).parents[1] / 'assets/project/session_labels_Nate-BIDS-pre-curate.csv'
+    ses_df = pd.read_csv(path.resolve())
+    handle_sessions(ses_df,fw,proj,dry_run=True)
+    # This test only checks for errors, so if we get here, we can assert True
+    # Integration testing checks for functionality
+    assert True
+
+def test_handle_subjects_no_changes(group='scien',project='Nate-BIDS-pre-curate'):
+    fw = flywheel.Client()
+    proj = fw.lookup(f'{group}/{project}')
+    path = Path(__file__).parents[1] / 'assets/project/subject_codes_Nate-BIDS-pre-curate.csv'
+    sub_df = pd.read_csv(path.resolve())
+    with pytest.raises(flywheel.rest.ApiException) as api_info:
+        handle_subjects(sub_df,fw,proj,dry_run=True)
+    # This test only checks for errors, so if we get here, we can assert True
+    # Integration testing checks for functionality
+        # Subject id is stale so it won't find
+        assert "not found" in api_info
 
 #def test_keep_specified_keys():
 #   ['']
@@ -194,6 +233,9 @@ def run():
     test_keep_specified_keys()
 
     test_data2csv_ses_duplicate()
+    test_handle_acquisitions_no_changes()
+    test_handle_sessions_no_changes()
+    test_handle_subjects_no_changes()
 
 if __name__ == '__main__':
     run()
