@@ -147,9 +147,9 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
     for index, row in acq_df.iterrows():
         # Since len(rows) != len(project.acquisitions), need to find all acquisitions
         #   in the project for each row in the acquisition dataframe.
-        acquisitions_for_row = fw.get_project_acsquisitions(project.label).find(
-            f"label={row['existing_acquisition_label']}")
-        for acquisition in acquisitions_for_row.iter():
+        acquisitions_for_row = fw.acquisitions.find(f"project={project.label},label={row['existing_acquisition_label']}")
+
+        for acquisition in acquisitions_for_row:
             if row.get('new_acquisition_label'):
                 if dry_run:
                     log.info(
@@ -183,9 +183,8 @@ def handle_sessions(ses_df, fw, project, dry_run=False):
     for index, row in ses_df.iterrows():
         # Since len(rows) != len(project.sessions), need to find all sessions
         #   in the project for each row in the session dataframe.
-        sessions_for_row = fw.get_project_sessions(project.label).find(
-            f"label={row['existing_session_label']}")
-        for session in sessions_for_row.iter():
+        sessions_for_row = fw.sessions.find(f"project={project.label},label={row['existing_session_label']}")
+        for session in sessions_for_row:
             if row.get('new_session_label'):
                 if dry_run:
                     log.info(f"NOT updating session label from {session.label} to {row['new_session_label']}")

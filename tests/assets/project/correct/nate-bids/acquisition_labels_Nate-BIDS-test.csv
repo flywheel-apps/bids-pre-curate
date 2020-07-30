@@ -1,7 +1,0 @@
-id,existing_acquisition_label,new_acquisition_label,modality,task,run,ignore
-5f1b0a42957ea008e8c8a847,T1w,,,,,
-5f1b0a42957ea008d8c8a842,coordsystem,,,,,
-5f1b0a42957ea008e4c8a842,task-somato,,,,,
-5f1b0c73957ea008ecc8a85d,T1w,,,,,
-5f1b0cc6957ea008e8c8a855,T1w,,,,,
-5f1b0cdb957ea008e4c8a84e,task-seizure_run-01_ieeg,,,,,
