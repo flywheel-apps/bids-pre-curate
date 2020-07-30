@@ -29,7 +29,7 @@ def build_csv(acqs, subs, sess, proj_label):
     """
     log.info(f'Starting client connection')
 
-    proj_label = make_file_name_safe(proj_label)
+    #proj_label = make_file_name_safe(proj_label)
     log.info(f'Building CSV for {proj_label}')
 
     # Acquisitions
