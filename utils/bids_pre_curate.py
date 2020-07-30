@@ -152,12 +152,16 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
 
         for acquisition in acquisitions_for_row:
             if row.get('new_acquisition_label'):
+                new_acq_name = make_file_name_safe(row['new_acquisition_label'],'-')
+                if row.get('ignore') and row['ignore'] in ['true','True','yes']:
+                    # Ignore acquisition
+                    new_acq_name += '_ignore'
                 if dry_run:
                     log.info(
-                        f"NOT updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
+                        f"NOT updating acquisition label from {acquisition.label} to {new_acq_name}")
                 else:
-                    log.info(f"updating acquisition label from {acquisition.label} to {row['new_acquisition_label']}")
-                    acquisition.update({'label': row['new_acquisition_label']})
+                    log.info(f"updating acquisition label from {acquisition.label} to {new_acq_name}")
+                    acquisition.update({'label': new_acq_name})
 
             for file in acquisition.files:
                 to_update = {
@@ -187,17 +191,19 @@ def handle_sessions(ses_df, fw, project, dry_run=False):
         sessions_for_row = fw.sessions.find(f"parents.project={project.id},label={row['existing_session_label']}")
         for session in sessions_for_row:
             if row.get('new_session_label'):
+                new_ses_name = make_file_name_safe(row['new_session_label'],'-')
                 if dry_run:
-                    log.info(f"NOT updating session label from {session.label} to {row['new_session_label']}")
+                    log.info(f"NOT updating session label from {session.label} to {new_ses_name}")
                 else:
-                    log.info(f"updating session label from {session.label} to {row['new_session_label']}")
-                    session.update({'label': row['new_session_label']})
+                    log.info(f"updating session label from {session.label} to {new_ses_name}")
+                    session.update({'label': new_ses_name})
 
 
 def handle_subjects(subj_df, fw, project, dry_run=False):
     # new_subject_label column should be all unique subjects
     unique_subjs = pd.unique(subj_df['new_subject_label'])
     for unique_subj in unique_subjs:
+        unique_subj = make_file_name_safe(unique_subj,'-')
         # Iterate over existing subjects that are supposed to have the same new_subject_label
         #   These are sessions that were misnamed and entered as subjects.
         #   All of these *subjects*  need to be converted to sessions under the new_subject_label subject
