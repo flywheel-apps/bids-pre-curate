@@ -34,7 +34,8 @@ required
 * reset_bids_ignore (boolean)
 
 ## Testing
-From the root directory of the project run `./tests/integration_tests/test.sh`.  This script will do the following:
+### Full integration testing
+From the root directory of the project run `./tests/integration_tests/test.sh <version> --all`.  This script will do the following:
 1. Generate (if needed) and install requirements with pipenv
 2. Copy the project directory to `/tmp/gear`
 3. Run unit tests
@@ -44,3 +45,21 @@ From the root directory of the project run `./tests/integration_tests/test.sh`. 
 7. Build the docker container for the integration test and run phase 2 (renaming the files and updating metadata) 
 
 After running the script, '$GROUP/$PROJECT' should be named correctly and have metadata uploaded.
+
+### Fine grained testing
+The `test.sh` script has a number of options for running, its full usage is as follows:
+```
+  Usage: test.sh <version> <to_run>
+
+  <version>: Version to tag docker images with (required)
+
+  to_run:
+    -a, --all         Run all tasks
+    -c, --clean       Clean project and populate with new data
+    -h, --help        Print this message
+    -o, --stage-one   Run stage 1 test
+    -s, --csv         Populate csv for stage 2
+    -t. --stage-two   Run stage 2 test
+    -u, --unit-test   Run unit tests
+  "
+```
