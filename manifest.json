@@ -56,25 +56,10 @@
     }
   },
   "config": {
-    "sessions_per_subject": {
-      "default": 0,
-      "description": "Number of sessions that will be collected per subject. If 0, sessions will be excluded from bids.",
+    "dry_run": {
+      "default": false,
+      "description": "Whether or not to perform a dry run, logging what would be changed without actually changing it."
       "type": "integer"
-    },
-    "infer_bids": {
-      "description": "Will try to infer bids fields from classification and acquisition label (SeriesDescription) and pre-populate the output csv files with these values.",
-      "optional": true,
-      "type": "boolean"
-    },
-    "reset_bids_info": {
-      "description": "",
-      "optional": true,
-      "type": "boolean"
-    },
-    "reset_bids_ignore": {
-      "description": "",
-      "optional": true,
-      "type": "boolean"
     }
   },
   "environment": {

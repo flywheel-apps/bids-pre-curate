@@ -16,28 +16,30 @@ from utils.bids.run_level import get_run_level_and_hierarchy
 def parse_config(context):
     conf_dict = {}
     config = context.config
-    if not config:
-        return
-    if config.get('sessions_per_subject'):
-        conf_dict['ses_per_sub'] = config.get('sessions_per_subject')
+    if not config.get('dry_run'):
+        return {'dry_run': False}
+    else:
+        return {'dry_run': config['dry_run']}
+    #if config.get('sessions_per_subject'):
+    #    conf_dict['ses_per_sub'] = config.get('sessions_per_subject')
     #else:
     #    gtk_context.log.error('sessions_per_subject required.  Exiting')
     #    sys.exit(1)
 
-    if config.get('infer_bids'):
-        conf_dict['infer_bids'] = True
-    else:
-        conf_dict['infer_bids'] = False
-    if config.get('reset_bids_info'):
-        conf_dict['reset_info'] = True
-    else:
-        conf_dict['reset_info'] = False
-    if config.get('reset_bids_ignore'):
-        conf_dict['reset_ignore'] = True
-    else:
-        conf_dict['reset_ignore'] = False
+    #if config.get('infer_bids'):
+    #    conf_dict['infer_bids'] = True
+    #else:
+    #    conf_dict['infer_bids'] = False
+    #if config.get('reset_bids_info'):
+    #    conf_dict['reset_info'] = True
+    #else:
+    #    conf_dict['reset_info'] = False
+    #if config.get('reset_bids_ignore'):
+    #    conf_dict['reset_ignore'] = True
+    #else:
+    #    conf_dict['reset_ignore'] = False
 
-    return conf_dict
+    #return conf_dict
 
 
 def validate_inputs(context):
@@ -78,7 +80,7 @@ def main(gtk_context):
         acq_df = pd.read_csv(inputs[0])
         ses_df = pd.read_csv(inputs[1])
         sub_df = pd.read_csv(inputs[2])
-        bids_pre_curate.read_from_csv(acq_df, sub_df, ses_df, project)  # ,config.dry_run)
+        bids_pre_curate.read_from_csv(acq_df, sub_df, ses_df, project ,config['dry_run'])
     else:
         fw = gtk_context.client
         acqs = [acq.to_dict() for acq in fw.get_project_acquisitions(project.id)]
