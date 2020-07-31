@@ -18,8 +18,6 @@ sudo rm -rf $GEAR_DIR
 cp -r . $GEAR_DIR
 function build_container {
   # Create gear directory and copy resources to dir
-
-  #
   cd $GEAR_DIR
   mkdir -p $GEAR_DIR/flywheel/v0
   cp {setup.py,run.py,Pipfile,Pipfile.lock} flywheel/v0
@@ -42,34 +40,89 @@ function build_container {
   fi
 }
 
-##################### Unit Testing
-python -m pytest tests/unit_tests/test_bids_curate.py
+function unit_test {
+  ##################### Unit Testing
+  python -m pytest tests/unit_tests/test_bids_curate.py
+}
+function pre_stage_1 {
+  ## Pre stage 1, clean and make new project
+  yes y | python tests/integration_tests/delete_project.py --group "$GROUP" --project "$PROJECT" --data-only
+  python tests/BIDS_popup_curation/makesession.py --group "$GROUP" --project "$PROJECT" --subjects IVA_202,IVA_202-1,IVA_202-2
+}
+function stage_1 {
+  ##################### Stage 1 integration testing
+  # Build container as production
+  build_container $1
+  cd $GEAR_DIR/flywheel/v0
+  # Run local csv generation stage of gear
+  fw gear local
+}
 
-## Pre stage 1, clean and make new project
+function populate_csv {
+  # Outputs are
+  cd $GEAR_DIR
+  mkdir input
+  cp flywheel/v0/output/* input/
+  python tests/integration_tests/populate_csv.py --sub-name IVA_202  \
+    --acquisitions input/acquisition_labels_$PROJECT.csv \
+    --subjects input/subject_codes_$PROJECT.csv \
+    --sessions input/session_labels_$PROJECT.csv
+}
 
-yes y | python tests/integration_tests/delete_project.py --group "$GROUP" --project "$PROJECT" --data-only
-python tests/BIDS_popup_curation/makesession.py --group "$GROUP" --project "$PROJECT" --subjects IVA_202,IVA_202-1,IVA_202-2
+function stage_2 {
+  ##################### Stage 2 integration testing
+  build_container $1 --test
+  cd $GEAR_DIR/flywheel/v0
 
-##################### Stage 1 integration testing
-# Build container as production
-build_container $1
-cd $GEAR_DIR/flywheel/v0
-# Run local csv generation stage of gear
-fw gear local
-# Outputs are
-cd $GEAR_DIR
-mkdir input
-cp flywheel/v0/output/* input/
-python tests/integration_tests/populate_csv.py --sub-name IVA_202  \
-  --acquisitions input/acquisition_labels_$PROJECT.csv \
-  --subjects input/subject_codes_$PROJECT.csv \
-  --sessions input/session_labels_$PROJECT.csv
+  fw gear local --acquisition_table ../../input/acquisition_labels_$PROJECT.csv \
+    --session_table ../../input/session_labels_$PROJECT.csv \
+    --subject_table ../../input/subject_codes_$PROJECT.csv
+}
+function help {
+  __usage="
+  Usage: $(basename $0) <version> <to_run>
 
-##################### Stage 2 integration testing
-build_container $1 --test
-cd $GEAR_DIR/flywheel/v0
+  <version>: Version to tag docker images with (required)
 
-fw gear local --acquisition_table ../../input/acquisition_labels_$PROJECT.csv \
-  --session_table ../../input/session_labels_$PROJECT.csv \
-  --subject_table ../../input/subject_codes_$PROJECT.csv
+  to_run:
+    -a, --all         Run all tasks
+    -c, --clean       Clean project and populate with new data
+    -h, --help        Print this message
+    -o, --stage-one   Run stage 1 test
+    -s, --csv         Populate csv for stage 2
+    -t. --stage-two   Run stage 2 test
+    -u, --unit-test   Run unit tests
+  "
+  echo "$__usage"
+}
 
+case "$2" in
+  "-h" | "--help")
+    help
+    ;;
+  "-a" | "--all")
+    unit_test
+    pre_stage_1
+    stage_1
+    populate_csv
+    stage_2
+    ;;
+  "-c" | "--clean")
+    pre_stage_1
+    ;;
+  "-o" | "--stage-one")
+    stage_1
+    ;;
+  "-s" | "--csv")
+    populate_csv
+    ;;
+  "-t" | "--stage-two")
+    stage_2
+    ;;
+  "-u" | "--unit-test")
+    unit_test
+    ;;
+  *)
+    help
+    ;;
+esac
