@@ -103,21 +103,21 @@ case "$2" in
   "-a" | "--all")
     unit_test
     pre_stage_1
-    stage_1
+    stage_1 $1
     populate_csv
-    stage_2
+    stage_2 $1
     ;;
   "-c" | "--clean")
     pre_stage_1
     ;;
   "-o" | "--stage-one")
-    stage_1
+    stage_1 $1
     ;;
   "-s" | "--csv")
     populate_csv
     ;;
   "-t" | "--stage-two")
-    stage_2
+    stage_2 $1
     ;;
   "-u" | "--unit-test")
     unit_test

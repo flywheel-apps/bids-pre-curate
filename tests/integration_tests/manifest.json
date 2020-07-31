@@ -4,10 +4,10 @@
   "description": "pre-curation process, which would allow the re-naming of acquisitions and classification of data based on user-input on a bulk scale",
   "version": "0.0.0",
   "custom": {
-    "docker-image": "flywheel/bids-pre-curate:0.0.1",
+    "docker-image": "flywheel/bids-pre-curate:0.0.2",
     "gear-builder": {
       "category": "utility",
-      "image": "flywheel/bids-pre-curate:0.0.1"
+      "image": "flywheel/bids-pre-curate:0.0.2"
     },
     "flywheel": {
       "suite": "BIDS Apps"
