@@ -1,22 +1,32 @@
 import pandas as pd
 import argparse
-
+from numpy.random import randint
 
 def main(args):
     acq_df = pd.read_csv(args.acquisitions).fillna('')
     sub_df = pd.read_csv(args.subjects).fillna('')
     ses_df = pd.read_csv(args.sessions).fillna('')
 
+    # Generate random binary for rows in acquisition df
+    # Randomly, or intermittently populate values
+    randoms = randint(2,size=acq_df.shape[0])
     for i, row in acq_df.iterrows():
-        acq_df.at[i, 'new_acquisition_label'] = f"{row['existing_acquisition_label']}-renamed-{i}"
-        acq_df.at[i, 'modality'] = f'modality-{i}'
-        acq_df.at[i, 'task'] = f'task-{i}'
-        acq_df.at[i, 'run'] = f'run-{i}'
-        acq_df.at[i, 'ignore'] = f'ignore-{i}'
+        acq_df.at[i, 'new_acquisition_label'] = (f"{row['existing_acquisition_label']}-renamed-{i}"
+                                                 if randoms[i] else '')
+        acq_df.at[i, 'modality'] = (f'modality-{i}'
+                                    if not randoms[i] else '')
+        acq_df.at[i, 'task'] = (f'task-{i}'
+                                if i % 3 == 0 else '')
+        acq_df.at[i, 'run'] = (f'run-{i}'
+                                if i % 4 == 0 else '')
+        acq_df.at[i, 'ignore'] = ('yes'
+                                if i % 5 == 0 else '')
 
     for i, row in sub_df.iterrows():
-        sub_df.at[i, 'new_subject_label'] = args.sub_name
+        sub_df.at[i, 'new_subject_label'] = (args.sub_name
+                                             if i != 0 else '')
 
+    # don't populate first row to test blank column
     for i, row in ses_df.iterrows():
         ses_df.at[i, 'new_session_label'] = f"{row['existing_session_label']}_{i}"
 
