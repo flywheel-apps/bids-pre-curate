@@ -39,7 +39,8 @@ def build_csv(acqs, subs, sess, proj_label):
                         prefix='acquisition_labels',
                         column_rename=['existing_acquisition_label'],
                         user_columns=['new_acquisition_label', 'modality', 'task', 'run', 'ignore'],
-                        unique=['label'])
+                        unique=['label'],
+                        old_new_index=[0,1])
 
     # Sessions
     log.info('Building session CSV...')
@@ -48,7 +49,8 @@ def build_csv(acqs, subs, sess, proj_label):
                          prefix='session_labels',
                          column_rename=['existing_session_label'],
                          user_columns=['new_session_label'],
-                         unique=['label'])
+                         unique=['label'],
+                         old_new_index=[0,1])
 
     # Subjects
     log.info('Building subject CSV...')
@@ -56,13 +58,14 @@ def build_csv(acqs, subs, sess, proj_label):
                         keep_keys=['id', 'label'],
                         prefix='subject_codes',
                         column_rename=['id', 'existing_subject_label'],
-                        user_columns=['new_subject_label'])
+                        user_columns=['new_subject_label'],
+                        old_new_index=[1,2])
     file_names = (acq_file[0], sess_file[0], sub_file[0])
     return file_names
 
 
 def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns=[],
-             unique=[], no_print=False):
+             unique=[], old_new_index=[0,1], no_print=False):
     """Creates a CSV on passed in data
 
     Create a CSV of passed in data while specifying which keys should be kept,
@@ -85,6 +88,10 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
             to add to the csv
         unique (list,optional): If specified, find unique entries on the
             given indices.
+        old_new_index (list): Mapping for columns of the existig to new names,
+            ex. if the columns of a df are ['existing_session_label',
+                'new_session_label','custom_data_1'], then
+            old_new_index would be [0,1] since it maps column 0 to column 1.
         no_print (boolean): If true, don't print output csv's, just print
             dataframe
 
@@ -110,12 +117,26 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
 
     if user_columns:
         data_df = data_df.reindex(columns=data_df.columns.tolist() + user_columns)
-
+    # TODO:
+    #   Unsure if this will work
+    data_df.iloc[:,old_new_index[1]] = data_df.apply(
+        lambda row: suggest_new_name(row[old_new_index[0]]), axis=1)
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     if no_print:
         return (csv_file, data_df)
     data_df.to_csv(csv_file, index_label=False, index=False)
     return (csv_file,)
+
+
+# TODO:
+#   Unsure if this will work
+def suggest_new_name(existing_label):
+    if make_file_name_safe(existing_label, '') != existing_label:
+        return make_file_name_safe(existing_label,'')
+    else:
+        return ''
+
+
 
 
 def keep_specified_keys(data, keep_keys):
