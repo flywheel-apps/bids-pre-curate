@@ -65,7 +65,7 @@ def build_csv(acqs, subs, sess, proj_label):
 
 
 def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns=[],
-             unique=[], old_new_index=[0,1], no_print=False):
+             unique=[], old_new_index=[0,1], no_print=False,allows='._-'):
     """Creates a CSV on passed in data
 
     Create a CSV of passed in data while specifying which keys should be kept,
@@ -94,6 +94,8 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
             old_new_index would be [0,1] since it maps column 0 to column 1.
         no_print (boolean): If true, don't print output csv's, just print
             dataframe
+        allows (string): Characters to allow in filename, passed into
+            make_file_name_safe
 
     Returns:
         tuple: if no_print,returns tuple of (csv_file,dataframe).  Otherwise
@@ -119,8 +121,8 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
         data_df = data_df.reindex(columns=data_df.columns.tolist() + user_columns)
     # TODO:
     #   Unsure if this will work
-    data_df.iloc[:,old_new_index[1]] = data_df.apply(
-        lambda row: suggest_new_name(row[old_new_index[0]]), axis=1)
+    data_df.iloc[:, old_new_index[1]] = data_df.apply(
+        lambda row: suggest_new_name(row[old_new_index[0]],allows), axis=1)
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     if no_print:
         return (csv_file, data_df)
@@ -130,9 +132,9 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
 
 # TODO:
 #   Unsure if this will work
-def suggest_new_name(existing_label):
+def suggest_new_name(existing_label,allows):
     if make_file_name_safe(existing_label, '') != existing_label:
-        return make_file_name_safe(existing_label,'')
+        return make_file_name_safe(existing_label,'', allows)
     else:
         return ''
 
