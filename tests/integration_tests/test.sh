@@ -55,7 +55,8 @@ function stage_1 {
   build_container $1
   cd $GEAR_DIR/flywheel/v0
   # Run local csv generation stage of gear
-  fw gear local
+  echo "Allow string: $2"
+  fw gear local --allows "$2"
 }
 
 function populate_csv {
@@ -96,6 +97,13 @@ function help {
   echo "$__usage"
 }
 
+if [[ $# -gt 2 ]]; then
+    allows="$3"
+else
+    allows=""
+fi
+echo "Allows: $allows"
+
 case "$2" in
   "-h" | "--help")
     help
@@ -103,7 +111,7 @@ case "$2" in
   "-a" | "--all")
     unit_test
     pre_stage_1
-    stage_1 $1
+    stage_1 $1 $allows
     populate_csv
     stage_2 $1
     ;;
@@ -111,7 +119,7 @@ case "$2" in
     pre_stage_1
     ;;
   "-o" | "--stage-one")
-    stage_1 $1
+    stage_1 $1 $allows
     ;;
   "-s" | "--csv")
     populate_csv
