@@ -11,6 +11,7 @@ flywheel-gear-toolkit = "~=0.1.0rc4"
 pandas = "~=1.0.5"
 bids-pre-curate = {editable = true, path = "."}
 pytest = "*"
+pytest-mock = "*"
 
 [requires]
 python_version = "3.8"
