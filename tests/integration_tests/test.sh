@@ -81,9 +81,10 @@ function stage_2 {
 }
 function help {
   __usage="
-  Usage: $(basename $0) <version> <to_run>
+  Usage: $(basename $0) <version> <to_run> [allows]
 
   <version>: Version to tag docker images with (required)
+  [allows]: Optional string of characters to add to the allow regex.
 
   to_run:
     -a, --all         Run all tasks
