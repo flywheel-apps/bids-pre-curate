@@ -1,15 +1,12 @@
 import flywheel_gear_toolkit
 import logging
 
-context = flywheel_gear_toolkit.GearToolkitContext()
-fw = context.client
 
 log = logging.getLogger(__name__)
 
-log.info(fw.get_config().site.api_url)
 
 
-def delete_empty_subject(subject_id, dry_run):
+def delete_empty_subject(subject_id, dry_run,fw):
     """Deletes a subject after confirming its empty.
 
     A subject will be empty if it has no sessions attached to it,

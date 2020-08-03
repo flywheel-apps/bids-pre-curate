@@ -17,7 +17,7 @@ from pathlib import Path
 
 test_data = [{'age': None,
          'analyses': None,
-         'code': 'sub-13',
+         'code': 'sub-13 test',
          'cohort': None,
          'created': '',
          'ethnicity': None,
@@ -26,7 +26,7 @@ test_data = [{'age': None,
          '_id': '5db0845e69d4f3002d16ee05',
          'info': {},
          'info_exists': False,
-         'label': 'sub-13',
+         'label': 'sub-13 test',
          'lastname': None,
          'master_code': None,
          'modified': '',
@@ -93,15 +93,19 @@ def test_data2csv_dummy_data():
 
     proj_label = 'test_proj'
     keep_keys = [['label'],
-                [['parents', 'group'], 'label'],
-                [['parents', 'subject'], 'label']]
+                ['label', ['parents', 'group']],
+                ['label', ['parents', 'subject'], 'label']]
     column_renames = [['existing_acquisition_label'],
-                    ['subject_group', 'existing_session_label'],
-                    ['subject_label', 'existing_session_label']]
+                    ['existing_session_label','subject_group'],
+                    ['existing_session_label','subject_label' ]]
+    remap = [[0,1],[0,2],[0,2]]
     prefixes = ['acq','sub','sess']
-    user_columns = [[],['test'],['test1','test2']]
-    for keep_key, column_rename, prefix, user_column in zip(keep_keys,column_renames, prefixes, user_columns):
-        path,df = data2csv(test_data,proj_label,keep_key,prefix, column_rename,user_column, no_print=True)
+    user_columns = [['new_session_label'],['new_session_label'],['new_session_label','test2']]
+    for keep_key, column_rename, prefix, user_column, remap in zip(keep_keys,column_renames, prefixes, user_columns, remap):
+        path,df = data2csv(test_data,proj_label,keep_key,prefix, column_rename,user_column, old_new_index=remap,no_print=True)
+        assert (df.columns == [*column_rename, *user_column]).all()
+        assert df['new_session_label'][0] == 'sub-13test'
+        assert df['new_session_label'][1] == ''
         print(path)
         print(df)
         print('\n')
@@ -118,8 +122,10 @@ def test_data2csv_acq_duplicate(group='scien',project='Nate-BIDS-pre-curate'):
                         unique=['label'],no_print=True)
     supposedly_unique = np.sort(df['existing_acquisition_label'].values)
     unique = np.unique(pd.DataFrame.from_records(acquistions_object)['label'].values)
-    comparison = unique == supposedly_unique
-    assert comparison.all()
+    print(supposedly_unique)
+    print(unique)
+    assert unique.shape == supposedly_unique.shape
+    print(df.columns)
     assert (df.columns == ['existing_acquisition_label','new_acquisition_label', 'modality', 'task', 'run', 'ignore']).all()
 
 
@@ -172,23 +178,22 @@ def test_keep_specified_keys():
                  ['_id', ['parents', 'group'], 'label'],
                  ['_id', ['permissions','perm-01'], 'label'],
                  [['parents','subject'],['parents','session','session_no'],
-                    ['parents','session','session_info']]]
-    expected = [[{'_id': '5db0845e69d4f3002d16ee05', 'label': 'sub-13', 'lastname': None},
-                 {'_id': '5db0845e69d4f3002d16ee05', 'label': 'sub-14', 'lastname': 'hello'}],
-                [{'_id': '5db0845e69d4f3002d16ee05', 'parents.group': 'scien', 'label': 'sub-13'},
-                 {'_id': '5db0845e69d4f3002d16ee05', 'parents.group': 'Nate', 'label': 'sub-14'}],
-                [{'_id': '5db0845e69d4f3002d16ee05', 'permissions.perm-01': 'nate-has-access', 'label': 'sub-13'},
-                 {'_id': '5db0845e69d4f3002d16ee05', 'permissions.perm-01': None, 'label': 'sub-14'}],
-                [{'parents.subject': None, 'parents.session.session_no': 1,
-                    'parents.session.session_info': None},
-                 {'parents.subject': None, 'parents.session.session_no': None,
-                    'parents.session.session_info': None}]]
+                    ['parents','session','session_info'],'label']]
+    expected = [['_id', 'label','lastname'],
+                ['_id', 'parents.group', 'label'],
+                ['_id', 'permissions.perm-01', 'label'],
+                ['parents.subject', 'parents.session.session_no',
+                 'parents.session.session_info','label']]
 
-    for keys, expected in zip(keep_keys, expected):
+    for keys,exp in zip(keep_keys,expected):
         kept = keep_specified_keys(test_data, keys)
-        for kept_dict,exp in zip(kept,expected):
+        for kept_dict in kept:
+            print(kept_dict)
+            print(exp)
             assert type(kept_dict) is dict
-            assert kept_dict == exp
+            assert set(kept_dict.keys()) == set(exp)
+            if 'parents.session.session_info' in kept_dict:
+                assert kept_dict['parents.session.session_info'] == None
 
 def test_handle_acquisitions_no_changes(group='scien',project='Nate-BIDS-pre-curate'):
     fw = flywheel.Client()
