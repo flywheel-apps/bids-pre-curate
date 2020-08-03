@@ -183,17 +183,19 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
                 sys.exit(1)
             # If acquisition name should change
             if row.get('new_acquisition_label'):
-                new_acq_name = make_file_name_safe(row['new_acquisition_label'], '-')
-            elif row.get('existing_acquisition_label') != make_file_name_safe(row.get('existing_acquisition_label')):
-                new_acq_name = make_file_name_safe(row['existing_acquisition_label'], '-')
+                new_acq_name = row['new_acquisition_label']
             else:
                 new_acq_name = row['existing_acquisition_label']
+            # Warn for bad labels
+            if make_file_name_safe(row['new_acquisition_label'], '') != row['new_acquisition_label']:
+                log.warning(f"New acquisition label f{row['new_acquisition_label']} may not be BIDS compliant")
 
-            if row.get('ignore') and row['ignore'] in ['true', 'True', 'yes']:
-                new_acq_name += '_ignore'
+            if row.get('ignore') and row['ignore'].lower() in ['true', 'yes']:
+                new_acq_name += '_ignore-BIDS'
 
             if new_acq_name == row['existing_acquisition_label']:
-                log.info(f"{row['existing_acquisition_label']} did not change, not updating")
+                log.info(f"Acquisition {row['existing_acquisition_label']} did not change, not updating")
+
             else:
                 if dry_run:
                     log.info(f"NOT updating acquisition label from {acquisition.label} to {new_acq_name}")
@@ -211,6 +213,7 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
                 # Only update file information if there is any new information
                 if not to_update.get('BIDS'):
                     continue
+
                 to_update_data = InfoUpdateInput(set=to_update)
                 if dry_run:
                     log.info(f'NOT updating file information for {file.name}')
@@ -228,15 +231,18 @@ def handle_sessions(ses_df, fw, project, dry_run=False):
         #   in the project for each row in the session dataframe.
         sessions_for_row = fw.sessions.find(f"parents.project={project.id},label={row['existing_session_label']}")
         for session in sessions_for_row:
+            # If session name should change
             if row.get('new_session_label'):
-                new_ses_name = make_file_name_safe(row['new_session_label'], '-')
-            elif row['existing_session_label'] != make_file_name_safe(row['existing_session_label'], '-'):
-                new_ses_name = make_file_name_safe(row['existing_session_label'], '-')
+                new_ses_name = row['new_session_label']
             else:
                 new_ses_name = row['existing_session_label']
 
+            # Warn for bad labels
+            if row['new_session_label'] != make_file_name_safe(row['new_session_label'], ''):
+                log.warning(f"New session label f{row['new_session_label']} may not be BIDS compliant")
+
             if row['existing_session_label'] == new_ses_name:
-                log.info(f"{row['existing_session_label']} did not change, not updating")
+                log.info(f"Session {row['existing_session_label']} did not change, not updating")
             else:
                 if dry_run:
                     log.info(f"NOT updating session label from {session.label} to {new_ses_name}")
@@ -246,11 +252,12 @@ def handle_sessions(ses_df, fw, project, dry_run=False):
 
 
 def handle_subjects(subj_df, fw, project, dry_run=False):
-    subj_df.loc[subj_df['new_subject_label'] == '','new_subject_label'] = subj_df['existing_subject_label']
+    subj_df.loc[subj_df['new_subject_label'] == '', 'new_subject_label'] = subj_df['existing_subject_label']
     # new_subject_label column should be all unique subjects
     unique_subjs = pd.unique(subj_df['new_subject_label'])
     for unique_subj in unique_subjs:
-        unique_subj = make_file_name_safe(unique_subj, '-')
+        if make_file_name_safe(unique_subj, '') != unique_subj:
+            log.warning(f"Subject label f{unique_subj} may not be BIDS compliant")
         # Iterate over existing subjects that are supposed to have the same new_subject_label
         #   These are sessions that were misnamed and entered as subjects.
         #   All of these *subjects*  need to be converted to sessions under the new_subject_label subject
@@ -288,7 +295,7 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
                         session.update(to_update)
 
                 # Once all sessions have been moved, delete this subject
-                if delete_empty_subject(new_subj.id, dry_run):
+                if delete_empty_subject(new_subj.id, dry_run, fw):
                     if dry_run:
                         log.info(f'Subject {new_subj.label} NOT deleted')
                     else:
