@@ -1,5 +1,5 @@
 import sys
-
+import re
 import flywheel_gear_toolkit
 from flywheel.models.info_update_input import InfoUpdateInput
 from utils.fly.make_file_name_safe import make_file_name_safe
@@ -12,7 +12,7 @@ import pprint
 log = logging.getLogger(__name__)
 
 
-def build_csv(acqs, subs, sess, proj_label):
+def build_csv(acqs, subs, sess, proj_label,allows):
     """Wrapper for building CSVs for project
 
         Subjects, sessions and acquisitions are passed in in the form of lists of
@@ -23,12 +23,30 @@ def build_csv(acqs, subs, sess, proj_label):
         subs (list):  list of dicts containing subjects for the project.
         sess (list):  list of dicts containing sessions for the project
         proj_label (str):  project name (label)
+        allows (str): Characters to allow in file names.
 
     Returns:
         file_names (tuple): Tuple of filenames (full filepath) for all three csv files
     """
     log.info(f'Starting client connection')
 
+    # Compile the user given regex.  Hyphen needs to not be between characters
+    #   otherwise it will be taken as a range, we need it to be taken literally
+    #   so we add it at the end if it is in the allows string.
+    # if the replacement is not a string or not safe, set replace_str to x
+    regex = r"[^A-Za-z0-9"
+    hyphen_in = '-' in allows
+    for char in allows:
+        if hyphen_in and char == '-':
+            continue
+        regex += char
+    regex += r"-]+" if hyphen_in else r"]+"
+    try:
+        safe_patt = re.compile(regex)
+    except re.error:
+        log.exception(f"Configuration value allows ({allows}) could not be processed. Exiting")
+        sys.exit(1)
+    log.info(f"Regex to use: {regex}")
     # proj_label = make_file_name_safe(proj_label)
     log.info(f'Building CSV for {proj_label}')
 
@@ -37,6 +55,7 @@ def build_csv(acqs, subs, sess, proj_label):
     acq_file = data2csv(acqs, proj_label,
                         keep_keys=['label'],
                         prefix='acquisition_labels',
+                        regex=safe_patt,
                         column_rename=['existing_acquisition_label'],
                         user_columns=['new_acquisition_label', 'modality', 'task', 'run', 'ignore'],
                         unique=['label'],
@@ -47,6 +66,7 @@ def build_csv(acqs, subs, sess, proj_label):
     sess_file = data2csv(sess, proj_label,
                          keep_keys=['label'],
                          prefix='session_labels',
+                         regex=safe_patt,
                          column_rename=['existing_session_label'],
                          user_columns=['new_session_label'],
                          unique=['label'],
@@ -57,6 +77,7 @@ def build_csv(acqs, subs, sess, proj_label):
     sub_file = data2csv(subs, proj_label,
                         keep_keys=['id', 'label'],
                         prefix='subject_codes',
+                        regex=safe_patt,
                         column_rename=['id', 'existing_subject_label'],
                         user_columns=['new_subject_label'],
                         old_new_index=[1,2])
@@ -64,8 +85,8 @@ def build_csv(acqs, subs, sess, proj_label):
     return file_names
 
 
-def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns=[],
-             unique=[], old_new_index=[0,1], no_print=False,allows='._-'):
+def data2csv(data, proj_label, keep_keys, prefix, regex, column_rename=[], user_columns=[],
+             unique=[], old_new_index=[0, 1], no_print=False):
     """Creates a CSV on passed in data
 
     Create a CSV of passed in data while specifying which keys should be kept,
@@ -82,6 +103,8 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
             list will be treated as nested keys.  A nested key will be
             relabeled with periods '.' denoting nesting.
         prefix (str): prefix under which to save file
+        regex (compiled regex): Characters to allow in filename, passed into
+            make_file_name_safe
         column_rename (list, optional): optional list of column titles in
             the same order as keep_keys to be displayed on the CSV.
         user_columns (list, optional): optional list of column titles
@@ -94,8 +117,6 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
             old_new_index would be [0,1] since it maps column 0 to column 1.
         no_print (boolean): If true, don't print output csv's, just print
             dataframe
-        allows (string): Characters to allow in filename, passed into
-            make_file_name_safe
 
     Returns:
         tuple: if no_print,returns tuple of (csv_file,dataframe).  Otherwise
@@ -119,10 +140,8 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
 
     if user_columns:
         data_df = data_df.reindex(columns=data_df.columns.tolist() + user_columns)
-    # TODO:
-    #   Unsure if this will work
     data_df.iloc[:, old_new_index[1]] = data_df.apply(
-        lambda row: suggest_new_name(row[old_new_index[0]],allows), axis=1)
+        lambda row: suggest_new_name(row[old_new_index[0]],regex), axis=1)
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     if no_print:
         return (csv_file, data_df)
@@ -130,11 +149,9 @@ def data2csv(data, proj_label, keep_keys, prefix, column_rename=[], user_columns
     return (csv_file,)
 
 
-# TODO:
-#   Unsure if this will work
-def suggest_new_name(existing_label,allows):
-    if make_file_name_safe(existing_label, '') != existing_label:
-        return make_file_name_safe(existing_label,'', allows)
+def suggest_new_name(existing_label,regex):
+    if make_file_name_safe(existing_label, regex, '') != existing_label:
+        return make_file_name_safe(existing_label, regex, '')
     else:
         return ''
 

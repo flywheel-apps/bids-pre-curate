@@ -19,10 +19,12 @@ def parse_config(context):
     if not config.get('dry_run'):
         conf_dict['dry_run']: False
     else:
-        conf_dict['dry_run']: config['dry_run']
+        conf_dict['dry_run'] = config['dry_run']
     if config.get('allows'):
-        conf_dict['allows']: config['allows']
-
+        conf_dict['allows'] = config['allows']
+    else:
+        conf_dict['allows'] = ''
+        context.log.warning("Allows not valid, using default of only A-Z, a-z and 0-9")
     #if config.get('sessions_per_subject'):
     #    conf_dict['ses_per_sub'] = config.get('sessions_per_subject')
     #else:
