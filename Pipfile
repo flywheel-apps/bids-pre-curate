@@ -12,6 +12,7 @@ pandas = "~=1.0.5"
 bids-pre-curate = {editable = true, path = "."}
 pytest = "*"
 pytest-mock = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.8"
