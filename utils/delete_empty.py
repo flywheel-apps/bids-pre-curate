@@ -1,6 +1,6 @@
-import flywheel_gear_toolkit
 import logging
 
+import flywheel_gear_toolkit
 
 log = logging.getLogger(__name__)
 

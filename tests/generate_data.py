@@ -1,6 +1,7 @@
-import flywheel
-import os
 import json
+import os
+
+import flywheel
 
 fw = flywheel.Client()
 group = 'scien'

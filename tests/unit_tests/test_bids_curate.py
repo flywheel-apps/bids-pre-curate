@@ -1,19 +1,17 @@
-from utils.deep_dict import nested_get
-from utils.bids_pre_curate import (
-    data2csv,
-    keep_specified_keys,
-    handle_sessions,
-    handle_acquisitions,
-    handle_subjects
-)
-from tests.BIDS_popup_curation.acquisitions import acquistions_object
-from tests.BIDS_popup_curation.sessions import session_object
-import flywheel
-import pytest
-import pandas as pd
-import numpy as np
 import os
 from pathlib import Path
+
+import flywheel
+import numpy as np
+import pandas as pd
+import pytest
+
+from tests.BIDS_popup_curation.acquisitions import acquistions_object
+from tests.BIDS_popup_curation.sessions import session_object
+from utils.bids_pre_curate import (data2csv, handle_acquisitions,
+                                   handle_sessions, handle_subjects,
+                                   keep_specified_keys)
+from utils.deep_dict import nested_get
 
 test_data = [
     {

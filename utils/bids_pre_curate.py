@@ -1,13 +1,15 @@
-import sys
-import re
-import flywheel_gear_toolkit
-from flywheel.models.info_update_input import InfoUpdateInput
-from utils.fly.make_file_name_safe import make_file_name_safe
-from utils.delete_empty import delete_empty_subject
-from utils.deep_dict import nested_get
 import logging
-import pandas as pd
 import pprint
+import re
+import sys
+
+import flywheel_gear_toolkit
+import pandas as pd
+from flywheel.models.info_update_input import InfoUpdateInput
+
+from utils.deep_dict import nested_get
+from utils.delete_empty import delete_empty_subject
+from utils.fly.make_file_name_safe import make_file_name_safe
 
 log = logging.getLogger(__name__)
 

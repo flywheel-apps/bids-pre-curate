@@ -1,6 +1,8 @@
-import pandas as pd
 import argparse
+
+import pandas as pd
 from numpy.random import randint
+
 
 def main(args):
     acq_df = pd.read_csv(args.acquisitions).fillna('')

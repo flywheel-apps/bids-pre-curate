@@ -2,16 +2,15 @@
 """
 """
 
-import os
-from pathlib import Path
-import shutil
-import logging
 import json
+import logging
+import os
+import shutil
+from pathlib import Path
 from pprint import pprint
 
 import flywheel_gear_toolkit
 import pandas as pd
-
 
 import run
 import utils.bids_pre_curate

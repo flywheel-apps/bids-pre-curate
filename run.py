@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Run the gear: set up for and call command-line command."""
 
-import sys
 import os
-import shutil
-import pandas as pd
 import pprint
+import shutil
+import sys
 
 import flywheel_gear_toolkit
+import pandas as pd
 from flywheel.rest import ApiException
+
 from utils import bids_pre_curate
 from utils.bids.run_level import get_run_level_and_hierarchy
 
@@ -16,14 +17,9 @@ from utils.bids.run_level import get_run_level_and_hierarchy
 def parse_config(context):
     conf_dict = {}
     config = context.config
-    if not config.get('dry_run'):
-        conf_dict['dry_run'] = False
-    else:
-        conf_dict['dry_run'] = config['dry_run']
-    if config.get('allows'):
-        conf_dict['allows'] = config['allows']
-    else:
-        conf_dict['allows'] = ''
+    conf_dict['dry_run'] = config.get('dry_run', False)
+    conf_dict['allows'] = config.get('allows','')
+    if conf_dict['allows'] == '':
         context.log.warning("Using default allows of only A-Z, a-z and 0-9")
     #if config.get('sessions_per_subject'):
     #    conf_dict['ses_per_sub'] = config.get('sessions_per_subject')
@@ -54,7 +50,7 @@ def validate_inputs(context):
 
     if acq and ses and sub:
         return (acq, ses, sub)
-    elif not (acq and ses and sub):
+    elif not (acq or ses or sub):
         return ()
     else:
         context.log.error('None or all inputs must be provided. Exiting')

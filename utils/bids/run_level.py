@@ -5,7 +5,6 @@ import logging
 
 from flywheel import ApiException
 
-
 log = logging.getLogger(__name__)
 
 
