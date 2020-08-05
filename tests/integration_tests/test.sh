@@ -101,7 +101,7 @@ function help {
 if [[ $# -gt 2 ]]; then
     allows="$3"
 else
-    allows=""
+    allows="._-"
 fi
 echo "Allows: $allows"
 
