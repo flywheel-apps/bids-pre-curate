@@ -4,6 +4,23 @@ import logging
 log = logging.getLogger(__name__)
 
 def nested_get(data_dict, keys):
+    """ Get values from a nested dictionary
+
+    Args:
+        data_dict:  Nested dictionary
+            ex.
+            {
+                'key1': {
+                    'key2': 'value'
+                }
+            }
+        keys: List of keys to get.
+            ex to get 'value' above, list of keys would be ['key1','key2']
+
+    Returns:
+        Value at nested key.
+
+    """
     data_copy = copy.copy(data_dict)
     for k in keys:
         if k not in data_copy:
