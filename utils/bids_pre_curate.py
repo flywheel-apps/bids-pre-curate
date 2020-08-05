@@ -197,11 +197,7 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
         # print(row['existing_acquisition_label'],len(acquisitions_for_row))
 
         for acquisition in acquisitions_for_row:
-            if acquisition.label != row['existing_acquisition_label']:
-                log.exception(f"""Existing acquisition label {row['existing_acquisition_label']} 
-                               doesn't match found label {acquisition.label}, please check
-                               that existing acquisition labels didn't change. Exiting""")
-                sys.exit(1)
+
             # If acquisition name should change
             if row.get('new_acquisition_label'):
                 new_acq_name = row['new_acquisition_label']
