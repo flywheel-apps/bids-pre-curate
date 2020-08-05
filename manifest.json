@@ -18,20 +18,7 @@
         "name": "MIT",
         "url": ""
       },
-      "dependencies": [
-        {
-          "name": "Other",
-          "url": "https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Licence"
-        },
-        {
-          "name": "Other",
-          "url": "https://github.com/ANTsX/ANTs/blob/v2.2.0/COPYING.txt"
-        },
-        {
-          "name": "Other",
-          "url": "https://afni.nimh.nih.gov/pub/dist/doc/program_help/README.copyright.html"
-        }
-      ]
+      "dependencies": []
     }
   },
   "inputs": {
