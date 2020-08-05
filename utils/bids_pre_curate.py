@@ -215,7 +215,7 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
 
             else:
                 if dry_run:
-                    log.info(f"NOT updating acquisition label from {acquisition.label} to {new_acq_name}")
+                    log.info(f"Dry Run: NOT updating acquisition label from {acquisition.label} to {new_acq_name}")
                 else:
                     log.info(f"updating acquisition label from {acquisition.label} to {new_acq_name}")
                     acquisition.update({'label': new_acq_name})
@@ -233,7 +233,7 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
 
                 to_update_data = InfoUpdateInput(set=to_update)
                 if dry_run:
-                    log.info(f'NOT updating file information for {file.name}')
+                    log.info(f'Dry Run: NOT updating file information for {file.name}')
                 else:
                     log.info(f'updating file information for {file.name}')
                     resp = fw.modify_acquisition_file_info(acquisition.id, file.name, to_update_data)
@@ -262,7 +262,7 @@ def handle_sessions(ses_df, fw, project, dry_run=False):
                 log.info(f"Session {row['existing_session_label']} did not change, not updating")
             else:
                 if dry_run:
-                    log.info(f"NOT updating session label from {session.label} to {new_ses_name}")
+                    log.info(f"Dry Run: NOT updating session label from {session.label} to {new_ses_name}")
                 else:
                     log.info(f"updating session label from {session.label} to {new_ses_name}")
                     session.update({'label': new_ses_name})
@@ -289,7 +289,7 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
             new_subj = fw.get_subject(subject_to_be_moved['id'])
             if not existing_subj:
                 if dry_run:
-                    log.info(f'NOT updating subject {new_subj.label} with new label, code of {unique_subj}')
+                    log.info(f'Dry Run: NOT updating subject {new_subj.label} with new label, code of {unique_subj}')
                 else:
                     log.info(f'updating new subject {new_subj.label} with new label, code of {unique_subj}')
                     new_subj.update({
@@ -311,7 +311,7 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
                         # Originally had '...to subject {existing_subj.label}' but this hasn't been updated yet
                         #   Locally, the two options are to cal fw.reload(), or use the name it was updated to
                         #   Since the latter is much more efficient, that's what I'll do.
-                        log.info(f'NOT moving session {session.label} to subject {unique_subj}')
+                        log.info(f'Dry Run: NOT moving session {session.label} to subject {unique_subj}')
                     else:
                         log.info(f'moving session {session.label} to subject {unique_subj}')
                         session.update(to_update)
@@ -319,7 +319,7 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
                 # Once all sessions have been moved, delete this subject
                 if delete_empty_subject(new_subj.id, dry_run, fw):
                     if dry_run:
-                        log.info(f'Subject {new_subj.label} NOT deleted')
+                        log.info(f'Dry Run: NOT deleting Subject {new_subj.label}.')
                     else:
                         log.info(f'Subject {new_subj.label} deleted')
                 else:
