@@ -275,6 +275,7 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
     for unique_subj in unique_subjs:
         if make_file_name_safe(unique_subj, '') != unique_subj:
             log.warning(f"Subject label f{unique_subj} may not be BIDS compliant")
+        existing_subj = project.subjects.find_first(f'label={unique_subj}')
         # Iterate over existing subjects that are supposed to have the same new_subject_label
         #   These are sessions that were misnamed and entered as subjects.
         #   All of these *subjects*  need to be converted to sessions under the new_subject_label subject
@@ -285,7 +286,6 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
                 continue
             # If subject doesn't exist, update this subject to have the new label and code
             # otherwise, update sessions below it to point to this
-            existing_subj = project.subjects.find_first(f'label={unique_subj}')
             new_subj = fw.get_subject(subject_to_be_moved['id'])
             if not existing_subj:
                 if dry_run:
