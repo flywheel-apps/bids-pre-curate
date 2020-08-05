@@ -296,6 +296,8 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
                         'label': unique_subj,
                         'code': unique_subj
                     })
+                # Update existing subject
+                existing_subj = new_subj
             else:
                 for session in new_subj.sessions.iter():
                     # Change all sessions to point to the existing subject
@@ -306,9 +308,12 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
                     }
 
                     if dry_run:
-                        log.info(f'NOT moving session {session.label} to subject {existing_subj.label}')
+                        # Originally had '...to subject {existing_subj.label}' but this hasn't been updated yet
+                        #   Locally, the two options are to cal fw.reload(), or use the name it was updated to
+                        #   Since the latter is much more efficient, that's what I'll do.
+                        log.info(f'NOT moving session {session.label} to subject {unique_subj}')
                     else:
-                        log.info(f'moving session {session.label} to subject {existing_subj.label}')
+                        log.info(f'moving session {session.label} to subject {unique_subj}')
                         session.update(to_update)
 
                 # Once all sessions have been moved, delete this subject
