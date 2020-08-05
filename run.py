@@ -49,9 +49,9 @@ def main(gtk_context):
         project_label = hierarchy['project_label']
     else:
         log.exception('Unable to determine run level and hierarchy, exiting')
-        #sys.exit(1)
-        group = 'scien'
-        project_label = 'Nate-BIDS-pre-curate'
+        sys.exit(1)
+        #group = 'scien'
+        #project_label = 'Nate-BIDS-pre-curate'
 
 
     config = parse_config(gtk_context)

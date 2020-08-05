@@ -20,15 +20,6 @@ def make_file_name_safe(input_basename, regex, replace_str=""):
     :return: output_basename, a safe
     :rtype: str
     """
-    try:
-        safe_patt = re.compile(regex)
-    except re.error:
-        log.exception(f"Configuration value allows ({allows}) could not be processed. Exiting")
-        sys.exit(1)
-    regex = re.compile(regex)
-    if regex.match(replace_str):
-        log.warning("{} is not a safe string, removing instead".format(replace_str))
-        replace_str = ""
 
     # Replace non-alphanumeric (or underscore) characters with replace_str
     safe_output_basename = re.sub(regex, replace_str, input_basename)
