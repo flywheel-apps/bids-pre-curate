@@ -42,7 +42,7 @@ function build_container {
 
 function unit_test {
   ##################### Unit Testing
-  python -m pytest tests/unit_tests/test_bids_curate.py
+  python -m pytest tests/unit_tests/test_bids_pre_curate.py
 }
 function pre_stage_1 {
   ## Pre stage 1, clean and make new project
