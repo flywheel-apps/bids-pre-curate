@@ -21,24 +21,6 @@ def parse_config(context):
     conf_dict['allows'] = config.get('allows','')
     if conf_dict['allows'] == '':
         context.log.warning("Using default allows of only A-Z, a-z and 0-9")
-    #if config.get('sessions_per_subject'):
-    #    conf_dict['ses_per_sub'] = config.get('sessions_per_subject')
-    #else:
-    #    gtk_context.log.error('sessions_per_subject required.  Exiting')
-    #    sys.exit(1)
-
-    #if config.get('infer_bids'):
-    #    conf_dict['infer_bids'] = True
-    #else:
-    #    conf_dict['infer_bids'] = False
-    #if config.get('reset_bids_info'):
-    #    conf_dict['reset_info'] = True
-    #else:
-    #    conf_dict['reset_info'] = False
-    #if config.get('reset_bids_ignore'):
-    #    conf_dict['reset_ignore'] = True
-    #else:
-    #    conf_dict['reset_ignore'] = False
 
     return conf_dict
 
