@@ -1,0 +1,16 @@
+existing_acquisition_label,new_acquisition_label,modality,task,run,ignore
+AAHead_Scout,AAHead_Scout_renamed,,,,
+AAHead_Scout_MPR_sag,,,,,yes
+AAHead_Scout_MPR_cor,,,,,
+AAHead_Scout_MPR_tra,,,,help,
+PhoenixZIPReport,,,playing,,
+t2w4radiology,,,,,
+t1_mprage_short,,,,,
+StartFMRI,FMRI,,,,
+intermediate t-Map,,,,,
+Design,,,,,
+Student work,,,,,
+EvaSeries_GLM,,,,,
+Mean_&_t-Maps,mean_and_t-maps,,,,
+Pedagogy,,,,,
+Student feedback,Student feedback,,,,

@@ -1,0 +1,16 @@
+existing_acquisition_label,new_acquisition_label,modality,task,run,ignore
+AAHead_Scout,AAHead_Scout-renamed-0,modality-0,task-0,run-0,ignore-0
+AAHead_Scout_MPR_sag,AAHead_Scout_MPR_sag-renamed-1,modality-1,task-1,run-1,ignore-1
+AAHead_Scout_MPR_cor,AAHead_Scout_MPR_cor-renamed-2,modality-2,task-2,run-2,ignore-2
+AAHead_Scout_MPR_tra,AAHead_Scout_MPR_tra-renamed-3,modality-3,task-3,run-3,ignore-3
+PhoenixZIPReport,PhoenixZIPReport-renamed-4,modality-4,task-4,run-4,ignore-4
+t2w4radiology,t2w4radiology-renamed-5,modality-5,task-5,run-5,ignore-5
+t1_mprage_short,t1_mprage_short-renamed-6,modality-6,task-6,run-6,ignore-6
+StartFMRI,StartFMRI-renamed-7,modality-7,task-7,run-7,ignore-7
+intermediate t-Map,intermediate t-Map-renamed-8,modality-8,task-8,run-8,ignore-8
+Design,Design-renamed-9,modality-9,task-9,run-9,ignore-9
+Student work,Student work-renamed-10,modality-10,task-10,run-10,ignore-10
+EvaSeries_GLM,EvaSeries_GLM-renamed-11,modality-11,task-11,run-11,ignore-11
+Mean_&_t-Maps,Mean_&_t-Maps-renamed-12,modality-12,task-12,run-12,ignore-12
+Pedagogy,Pedagogy-renamed-13,modality-13,task-13,run-13,ignore-13
+Student feedback,Student feedback-renamed-14,modality-14,task-14,run-14,ignore-14

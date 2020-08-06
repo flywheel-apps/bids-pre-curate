@@ -1,0 +1,7 @@
+.idea/
+.containerId
+user.json
+__pycache__
+output/
+input/
+*.egg-info
