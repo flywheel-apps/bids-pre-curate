@@ -1,13 +1,13 @@
 {
   "name": "bids-pre-curate",
-  "label": "<Bids-Pre-Curate>: Project pre-curation for BIDS",
-  "description": "pre-curation process, which would allow the re-naming of acquisitions and classification of data based on user-input on a bulk scale",
-  "version": "0.0.1",
+  "label": "BIDS Pre-Curate: Project preparation for BIDS curation",
+  "description": "Re-naming of containers and modification of classification of data based on user-input on a bulk scale",
+  "version": "0.1.0",
   "custom": {
-    "docker-image": "flywheel/bids-pre-curate:0.0.1",
+    "docker-image": "flywheel/bids-pre-curate:0.1.0",
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/bids-pre-curate:0.0.1"
+      "image": "flywheel/bids-pre-curate:0.1.0"
     },
     "flywheel": {
         "suite": "BIDS Apps"
@@ -58,7 +58,7 @@
     "PYTHONUNBUFFERED": "1"
   },
   "command": "/flywheel/v0/run.py",
-  "author": "Flywheel, LLC",
+  "author": "Flywheel Exchange, LLC",
   "maintainer": "Flywheel <support@flywheel.io>",
   "license": "MIT",
   "source": "https://github.com/flywheel-apps/bids-pre-curate",
