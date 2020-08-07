@@ -2,12 +2,12 @@
   "name": "bids-pre-curate",
   "label": "BIDS Pre-Curate: Project preparation for BIDS curation",
   "description": "Re-naming of containers and modification of classification of data based on user-input on a bulk scale",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "custom": {
-    "docker-image": "flywheel/bids-pre-curate:0.1.0",
+    "docker-image": "flywheel/bids-pre-curate:0.1.1",
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/bids-pre-curate:0.1.0"
+      "image": "flywheel/bids-pre-curate:0.1.1"
     },
     "flywheel": {
         "suite": "BIDS Apps"
@@ -49,7 +49,7 @@
       "type": "boolean"
     },
     "allows": {
-      "default": "",
+      "default": "._-",
       "description": "Characters to allow in subject, session, and acquisition names.  Default allows periods (.), underscores (_) and hyphens (-).",
       "type": "string"
     }

@@ -3,6 +3,13 @@ The bids pre-curation gear will help in the renaming of acquisitions and classif
 of data based on user-input on a bulk scale.
 
 ### Workflow
+
+This gear can run at the project, subject or session level.
+It should initially be run at the project level to prepare the whole project for BIDS curation.  After that, changes can be made to specific subjects or sessions by running at the 
+[subject level](https://docs.flywheel.io/hc/en-us/articles/360038261213-Run-an-analysis-gear-on-a-subject) or
+[session level](https://docs.flywheel.io/hc/en-us/articles/360015505453-Analysis-Gears).
+To run at the project level, select the "Analyses" tab (at the top, between "Information" and "Data Views") then click on the "Run Analysis Gear" button and in the drop-down menut, look for the "BIDS Apps" section and select "BIDS Pre-Curate".  If you are looking at the project sessions there will be another "Analyses" tab and if you select that, there will also be a "Run Analysis Gear" button.  If you click that one, you will be running at the session level.  Similarly, if you are looking at the project sessions but have selected the Subject View button, there will another analysis tab that will show the button to run at the subject level.  See the links above for more information on running at those levels.
+
 Users will run pre-curate on their project data, this will generate csv files that will be populated with a unique list of container labels and the information we have about the files within, as well as slots for the information that we need (classification, task, etc.). 
 
 > This will be known as _Stage 1_, in Stage 1, suggested names are automatically populated in the new_[type]_label field.  These suggested names come from the allows set in the configuration.
@@ -59,5 +66,4 @@ The `test.sh` script has a number of options for running, its full usage is as f
     -s, --csv         Populate csv for stage 2
     -t. --stage-two   Run stage 2 test
     -u, --unit-test   Run unit tests
-  "
 ```
