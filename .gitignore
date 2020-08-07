@@ -5,3 +5,4 @@ __pycache__
 output/
 input/
 *.egg-info
+*.swp
