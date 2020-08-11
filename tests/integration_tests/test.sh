@@ -133,7 +133,7 @@ test(){
       ;;
   esac
 }
-$__shell__usage="
+__shell_usage="
   ... shell
     Enter bash shell in container
 "
@@ -161,7 +161,7 @@ run(){
     cmd=$run_cmd
     shift
   else
-    echo $__run_usage
+    echo "$__run_usage"
   fi
   case "$1" in
     "-a" | "--all")
@@ -183,24 +183,20 @@ run(){
       stage_2 $cmd
       ;;
     *)
-      echo $___run_usage
+      echo "$__run_usage"
       ;;
   esac
 }
 __usage="
-  Usage: $(basename $0) <to_run> [allows]
+  Usage: $(basename $0) {run,shell,test}
 
-  <version>: Version to tag docker images with (required)
-  [allows]: Optional string of characters to add to the allow regex.
+  -h, --help    Print this message
 
-  $__run_usage
+  "$__run_usage"
 
-  $__test_usage
+  "$__test_usage"
 
-  $__shell_usage
-  to_run:
-    -h, --help        Print this message
-    -u, --unit-test   Run unit tests
+  "$__shell_usage"
   "
 main() {
   while [ $# -gt 0 ]; do
@@ -221,13 +217,14 @@ main() {
         break
         ;;
       "-h" | "--help")
-        echo $__usage
+        echo "$__usage"
         break
         ;;
       *)
-        help
+        echo "$__usage"
         break
         ;;
     esac
   done
 }
+main "$@"
