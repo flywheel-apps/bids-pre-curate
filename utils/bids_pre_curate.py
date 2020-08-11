@@ -207,7 +207,7 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
             if make_file_name_safe(row['new_acquisition_label'], '') != row['new_acquisition_label']:
                 log.warning(f"New acquisition label f{row['new_acquisition_label']} may not be BIDS compliant")
 
-            if row.get('ignore') and row['ignore'].lower() in ['true', 'yes']:
+            if row.get('ignore') and str(row['ignore']).lower() in ['true', 'yes']:
                 new_acq_name += '_ignore-BIDS'
 
             if new_acq_name == row['existing_acquisition_label']:
