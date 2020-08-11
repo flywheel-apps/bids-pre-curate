@@ -219,26 +219,7 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
                 else:
                     log.info(f"updating acquisition label from {acquisition.label} to {new_acq_name}")
                     acquisition.update({'label': new_acq_name})
-            for file in acquisition.files:
-                to_update = {
-                    'BIDS': {}
-                }
-                if row.get('modality'): to_update['BIDS']['Modality'] = row['modality']
-                if row.get('task'): to_update['BIDS']['Task'] = row['task']
-                if row.get('run'): to_update['BIDS']['Run'] = row['run']
-                if row.get('ignore'): to_update['BIDS']['Ignore'] = row['ignore']
-                # Only update file information if there is any new information
-                if not to_update.get('BIDS'):
-                    continue
 
-                to_update_data = InfoUpdateInput(set=to_update)
-                if dry_run:
-                    log.info(f'Dry Run: NOT updating file information for {file.name}')
-                else:
-                    log.info(f'updating file information for {file.name}')
-                    resp = fw.modify_acquisition_file_info(acquisition.id, file.name, to_update_data)
-                    if not resp['modified']:
-                        log.exception(f'Problem updating file {file.name}')
 
 
 def handle_sessions(ses_df, fw, project, dry_run=False):
