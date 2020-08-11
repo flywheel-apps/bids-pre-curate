@@ -1,0 +1,11 @@
+{
+    "config": {
+        "allows": "",
+        "dry_run": false
+    },
+    "inputs": {},
+    "destination": {
+        "type": "analysis",
+        "id": "5f2acf2076388100d75890a2"
+    }
+}

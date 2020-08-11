@@ -1,0 +1,75 @@
+{
+    "config": {
+        "allows": "",
+        "dry_run": false
+    },
+    "inputs": {
+        "acquisition_table": {
+            "base": "file",
+            "hierarchy": {
+                "type": "project",
+                "id": "5f1f3c14957ea0093cc8a8cf"
+            },
+            "location": {
+                "name": "acquisition_labels_Nate-BIDS-pre-curate-4.csv",
+                "path": "/flywheel/v0/inputs/acquisition_labels_Nate-BIDS-pre-curate-4.csv"
+            },
+            "object": {
+                "info": {},
+                "tags": [],
+                "measurements": [],
+                "classification": {},
+                "mimetype": "text/csv",
+                "type": "tabular data",
+                "modality": null,
+                "size": 531
+            }
+        },
+        "session_table": {
+            "base": "file",
+            "hierarchy": {
+                "type": "project",
+                "id": "5f1f3c14957ea0093cc8a8cf"
+            },
+            "location": {
+                "name": "session_labels_Nate-BIDS-pre-curate-4.csv",
+                "path": "/flywheel/v0/inputs/session_labels_Nate-BIDS-pre-curate-4.csv"
+            },
+            "object": {
+                "info": {},
+                "tags": [],
+                "measurements": [],
+                "classification": {},
+                "mimetype": "text/csv",
+                "type": "tabular data",
+                "modality": null,
+                "size": 118
+            }
+        },
+        "subject_table": {
+            "base": "file",
+            "hierarchy": {
+                "type": "project",
+                "id": "5f1f3c14957ea0093cc8a8cf"
+            },
+            "location": {
+                "name": "subject_codes_Nate-BIDS-pre-curate-4.csv",
+                "path": "/flywheel/v0/inputs/subject_codes_Nate-BIDS-pre-curate-4.csv"
+            },
+            "object": {
+                "info": {},
+                "tags": [],
+                "measurements": [],
+                "classification": {},
+                "mimetype": "text/csv",
+                "type": "tabular data",
+                "modality": null,
+                "size": 168
+            }
+        }
+    },
+    "destination": {
+        "type": "analysis",
+        "id": "5f2add8676388100bb588f53"
+    }
+}

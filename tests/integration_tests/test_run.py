@@ -8,6 +8,8 @@ import os
 import shutil
 from pathlib import Path
 from pprint import pprint
+import pytest
+
 
 import flywheel_gear_toolkit
 import pandas as pd
@@ -15,25 +17,9 @@ import pandas as pd
 import run
 import utils.bids_pre_curate
 
-gtk_context = flywheel_gear_toolkit.GearToolkitContext()
-gtk_context.init_logging()
-
-log = gtk_context.log
-log.info('Test')
-
-project = gtk_context.client.lookup('scien/Nate-BIDS-pre-curate')
-inputs = run.validate_inputs(gtk_context)
-log.info('Validated inputs')
-
-acq_df = pd.read_csv(inputs[0]).fillna('')
-ses_df = pd.read_csv(inputs[1]).fillna('')
-sub_df = pd.read_csv(inputs[2]).fillna('')
 
 
-log.info('Finished loading data')
-#print(acq_df)
-#print(ses_df)
-#print(sub_df)
+
 
 
 def test():
@@ -50,3 +36,13 @@ def test():
 test()
 
 
+
+@pytest.fixture
+def gtk_context():
+    return flywheel_gear_toolkit.GearToolkitContext()
+
+class TestWetRun:
+    def test_wet_run(self, gtk_context):
+        run.main(gtk_context)
+
+        if gtk_context.config

@@ -4,6 +4,8 @@ GROUP='scien'
 PROJECT='Nate-BIDS-pre-curate'
 git submodule update
 
+cwd=$(pwd)
+
 GEAR_DIR=/tmp/gear
 if [[ ! -a tests/integration_tests/requirements.txt ]]; then
   # Create requirements
@@ -16,28 +18,45 @@ fi
 
 sudo rm -rf $GEAR_DIR
 cp -r . $GEAR_DIR
-function build_container {
-  # Create gear directory and copy resources to dir
-  cd $GEAR_DIR
-  mkdir -p $GEAR_DIR/flywheel/v0
-  cp {setup.py,run.py,Pipfile,Pipfile.lock} flywheel/v0
-  cp -r utils flywheel/v0
+function build_and_run_container {
+  VERSION=$(grep "version" manifest.json | sed "s/[^0-9._]//g")
+  echo "$(pwd)"
+  GEAR=/tmp/gear/flywheel/v0
 
-  cd flywheel/v0
-
-  if [[ "$2" == "--test" ]]; then
-    cp $GEAR_DIR/tests/integration_tests/test_run.py test_run.py
-    chmod +x test_run.py
-    cp $GEAR_DIR/tests/integration_tests/manifest.json manifest.json
-    cp $GEAR_DIR/tests/integration_tests/Dockerfile Dockerfile
-    cp $GEAR_DIR/tests/integration_tests/requirements.txt requirements.txt
-    docker build -t flywheel/bids-pre-curate:$1  ./
-  else
-    cp $GEAR_DIR/Dockerfile Dockerfile
-    cp $GEAR_DIR/manifest.json manifest.json
-    cp $GEAR_DIR/requirements.txt requirements.txt
-    docker build -t flywheel/bids-pre-curate:$1 ./
+  if [[ ! -d $GEAR ]]; then
+    mkdir -p $GEAR
   fi
+  # Create gear directory and copy resources to dir
+  cp -r {setup.py,run.py,Pipfile*,tests,utils} $GEAR/
+
+  # Replace config.json with second argument
+  if [[ -f "$2" ]]; then
+    cp "$2" $GEAR/tests/assets/config.json
+  fi
+
+  cd $GEAR
+
+  mv tests/integration_tests/Dockerfile .
+
+  if [[ "$3" == '--hide-build' ]]; then
+    docker build -t flywheel/bids-pre-curate:$VERSION ./ > /dev/null 2>&1
+  else
+    docker build -t flywheel/bids-pre-curate:$VERSION ./
+  fi
+  mkdir inputs
+  mkdir outputs
+
+  container=$(docker container ls -a | grep bids-pre-curate)
+  if [[ ! -z $container ]]; then
+    docker container rm bids-pre-curate
+  fi
+
+
+  docker run -it --rm --name bids-pre-curate \
+    -v $GEAR/inputs:/flywheel/v0/inputs \
+    -v $GEAR/outputs:/flywheel/v0/outputs \
+    -v $GEAR/tests/assets/config.json:/flywheel/v0/config.json \
+    flywheel/bids-pre-curate:$VERSION "$1"
 }
 
 function unit_test {
@@ -52,18 +71,16 @@ function pre_stage_1 {
 function stage_1 {
   ##################### Stage 1 integration testing
   # Build container as production
-  build_container $1
-  cd $GEAR_DIR/flywheel/v0
-  # Run local csv generation stage of gear
-  echo "Allow string: $2"
-  fw gear local --allows "$2"
+  cd $cwd
+  run=$1
+#  run="python3 -m pdb tests/integration_tests/test_run.py"
+  build_and_run_container $run tests/assets/config-stage1.json
 }
 
 function populate_csv {
   # Outputs are
-  cd $GEAR_DIR
-  mkdir input
-  cp flywheel/v0/output/* input/
+  cd $GEAR
+  mv outputs/* inputs/
   python tests/integration_tests/populate_csv.py --sub-name IVA_202  \
     --acquisitions input/acquisition_labels_$PROJECT.csv \
     --subjects input/subject_codes_$PROJECT.csv \
@@ -72,66 +89,145 @@ function populate_csv {
 
 function stage_2 {
   ##################### Stage 2 integration testing
-  build_container $1 --test
-  cd $GEAR_DIR/flywheel/v0
 
-  fw gear local --acquisition_table ../../input/acquisition_labels_$PROJECT.csv \
-    --session_table ../../input/session_labels_$PROJECT.csv \
-    --subject_table ../../input/subject_codes_$PROJECT.csv
+  cd $cwd
+  run=$1
+#  run="python3 -m pdb tests/integration_tests/test_run.py"
+  build_and_run_container $run tests/assets/config-stage2.json
 }
-function help {
-  __usage="
-  Usage: $(basename $0) <version> <to_run> [allows]
+__test_usage="
+  ... test {unit_test,stage1,stage2,all} [opts]
+    Use pytest to perform integration test on stage 1, stage 2 or full.
+
+  opts:
+    -d, --with-debug  Run pytest and drop to pdb on error
+    -c. --with-cov    Run pytest and print coverage report
+"
+test(){
+  if [[ "$2" == "-c" ]] || [[ "$2" == "--with-cov" ]]; then
+    cmd="python3 -m pipenv run pytest --cov run tests/integration_tests/test_run.py"
+  elif [[ "$2" == "-d" ]] || [[ "$2" == "--with-debug" ]]; then
+    cmd="python3 -m pipenv run pytest --pdb run tests/integration_tests/test_run.py"
+  else
+    echo $__test_usage
+  fi
+
+  case $1 in
+    "unit_test")
+      unit_test
+      ;;
+    "stage1")
+      stage_1 $cmd
+      ;;
+    "stage2")
+      stage_2 $cmd
+      ;;
+    "all")
+      pre_stage_1
+      stage_1 $cmd
+      populate_csv
+      stage_2 $cmd
+      ;;
+    *)
+      echo $__test_usage
+      ;;
+  esac
+}
+$__shell__usage="
+  ... shell
+    Enter bash shell in container
+"
+shell(){
+  build_and_run_container "/bin/bash"
+}
+__run_usage="
+  ... run {full,pdb} [opts]
+    Run with either full run or drop into PDB
+
+  opts:
+    -a, --all         Run all tasks
+    -c, --clean       Clean project and populate with new data
+    -o, --stage-one   Run stage 1 test
+    -s, --csv         Populate csv for stage 2
+    -t. --stage-two   Run stage 2 test
+"
+run(){
+  run_cmd="python3 tests/integration_tests/test_run.py"
+  pdb_cmd="python3 -m pdb tests/integration_tests/test_run.py"
+  if [[ $1 == 'pdb' ]]; then
+    cmd=$pdb_cmd
+    shift
+  elif [[ $1 == 'full' ]]; then
+    cmd=$run_cmd
+    shift
+  else
+    echo $__run_usage
+  fi
+  case "$1" in
+    "-a" | "--all")
+      pre_stage_1
+      stage_1 $cmd
+      populate_csv
+      stage_2 $cmd
+      ;;
+    "-c" | "--clean")
+      pre_stage_1
+      ;;
+    "-o" | "--stage-one")
+      stage_1 $cmd
+      ;;
+    "-s" | "--csv")
+      populate_csv
+      ;;
+    "-t" | "--stage-two")
+      stage_2 $cmd
+      ;;
+    *)
+      echo $___run_usage
+      ;;
+  esac
+}
+__usage="
+  Usage: $(basename $0) <to_run> [allows]
 
   <version>: Version to tag docker images with (required)
   [allows]: Optional string of characters to add to the allow regex.
 
+  $__run_usage
+
+  $__test_usage
+
+  $__shell_usage
   to_run:
-    -a, --all         Run all tasks
-    -c, --clean       Clean project and populate with new data
     -h, --help        Print this message
-    -o, --stage-one   Run stage 1 test
-    -s, --csv         Populate csv for stage 2
-    -t. --stage-two   Run stage 2 test
     -u, --unit-test   Run unit tests
   "
-  echo "$__usage"
+main() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      "run")
+        shift
+        run "$@"
+        break
+        ;;
+      "test")
+        shift
+        test "$@"
+        break
+        ;;
+      "shell")
+        shift
+        build_and_run_container "/bin/bash"
+        break
+        ;;
+      "-h" | "--help")
+        echo $__usage
+        break
+        ;;
+      *)
+        help
+        break
+        ;;
+    esac
+  done
 }
-
-if [[ $# -gt 2 ]]; then
-    allows="$3"
-else
-    allows="._-"
-fi
-echo "Allows: $allows"
-
-case "$2" in
-  "-h" | "--help")
-    help
-    ;;
-  "-a" | "--all")
-    unit_test
-    pre_stage_1
-    stage_1 $1 $allows
-    populate_csv
-    stage_2 $1
-    ;;
-  "-c" | "--clean")
-    pre_stage_1
-    ;;
-  "-o" | "--stage-one")
-    stage_1 $1 $allows
-    ;;
-  "-s" | "--csv")
-    populate_csv
-    ;;
-  "-t" | "--stage-two")
-    stage_2 $1
-    ;;
-  "-u" | "--unit-test")
-    unit_test
-    ;;
-  *)
-    help
-    ;;
-esac

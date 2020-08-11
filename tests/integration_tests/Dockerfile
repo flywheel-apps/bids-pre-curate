@@ -9,6 +9,8 @@ RUN pip install -r /tmp/requirements.txt
 ENV FLYWHEEL /flywheel/v0
 WORKDIR ${FLYWHEEL}
 
+COPY {Pipfile, Pipfile.lock} ./
+RUN python3 -m pipenv install --system
 
 # Save docker environ
 ENV PYTHONUNBUFFERED 1
@@ -16,11 +18,9 @@ ENV PYTHONUNBUFFERED 1
 ############## DEV ONLY ##########
 #COPY user.json /root/.config/flywheel/user.json
 # Copy executable/manifest to Gear
-COPY manifest.json ${FLYWHEEL}/manifest.json
 COPY utils ${FLYWHEEL}/utils
 COPY run.py ${FLYWHEEL}/run.py
-COPY test_run.py ${FLYWHEEL}/test_run.py
+COPY testd/ ${FLYWHEEL}/tests
 
 # Configure entrypoint
-RUN chmod a+x ${FLYWHEEL}/test_run.py
-ENTRYPOINT ["/flywheel/v0/test_run.py"]
+ENTRYPOINT ["/bin/bash","-c"]
