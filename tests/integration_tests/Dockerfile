@@ -2,8 +2,6 @@ FROM python:3.8-buster as base
 
 LABEL maintainer="support@flywheel.io"
 
-COPY requirements.txt /tmp
-RUN pip install -r /tmp/requirements.txt
 
 # Make directory for flywheel spec (v0)
 ENV FLYWHEEL /flywheel/v0
