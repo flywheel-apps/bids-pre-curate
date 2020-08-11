@@ -1,6 +1,7 @@
 import argparse
 
 import pandas as pd
+from utils.fly.make_file_name_safe import make_file_name_safe
 from numpy.random import randint
 
 
@@ -13,13 +14,13 @@ def main(args):
     # Randomly, or intermittently populate values
     randoms = randint(2,size=acq_df.shape[0])
     for i, row in acq_df.iterrows():
-        acq_df.at[i, 'new_acquisition_label'] = (f"{row['existing_acquisition_label']}-renamed-{i}"
-                                                 if randoms[i] else '')
-        acq_df.at[i, 'modality'] = (f'modality-{i}'
+        acq_df.at[i, 'new_acquisition_label'] = \
+            f"{make_file_name_safe(row['existing_acquisition_label'],'','')}"
+        acq_df.at[i, 'modality'] = (f'T1{i}'
                                     if not randoms[i] else '')
-        acq_df.at[i, 'task'] = (f'task-{i}'
+        acq_df.at[i, 'task'] = (f'task{i}'
                                 if i % 3 == 0 else '')
-        acq_df.at[i, 'run'] = (f'run-{i}'
+        acq_df.at[i, 'run'] = (f'{i}'
                                 if i % 4 == 0 else '')
         acq_df.at[i, 'ignore'] = ('yes'
                                 if i % 5 == 0 else '')
