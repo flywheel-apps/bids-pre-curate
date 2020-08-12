@@ -6,6 +6,7 @@ git submodule update
 
 cwd=$(pwd)
 
+GEAR=/tmp/gear/flywheel/v0
 if [[ ! -a tests/integration_tests/requirements.txt ]]; then
   # Create requirements
   pipenv run pip freeze > tests/integration_tests/requirements.txt
@@ -18,7 +19,6 @@ fi
 function build_and_run_container {
   VERSION=$(grep "version" manifest.json | sed "s/[^0-9._]//g")
   echo "$(pwd)"
-  GEAR=/tmp/gear/flywheel/v0
 
   if [[ ! -d $GEAR ]]; then
     mkdir -p $GEAR
@@ -50,11 +50,11 @@ function build_and_run_container {
 
   echo "Running command inside container: $1"
   docker run -it --rm --name bids-pre-curate \
-    -v $GEAR/inputs:/flywheel/v0/inputs \
-    -v $GEAR/outputs:/flywheel/v0/outputs \
+    -v $GEAR/inputs:/flywheel/v0/input \
+    -v $GEAR/outputs:/flywheel/v0/output \
     -v $GEAR/tests/assets/config.json:/flywheel/v0/config.json \
     -v $GEAR/tests/integration_tests/user.json:/root/.config/flywheel/user.json \
-    flywheel/bids-pre-curate:$VERSION "$1"
+    flywheel/bids-pre-curate:$VERSION "$1" 2>&1
 }
 
 function unit_test {
@@ -77,11 +77,11 @@ function stage_1 {
 function populate_csv {
   # Outputs are
   cd $GEAR
-  mv outputs/* inputs/
-  python tests/integration_tests/populate_csv.py --sub-name IVA_202  \
-    --acquisitions input/acquisition_labels_$PROJECT.csv \
-    --subjects input/subject_codes_$PROJECT.csv \
-    --sessions input/session_labels_$PROJECT.csv
+  mv outputs/* inputs
+  pipenv run python3 tests/integration_tests/populate_csv.py --sub-name IVA_202  \
+    --acquisitions inputs/acquisition_labels_$PROJECT.csv \
+    --subjects inputs/subject_codes_$PROJECT.csv \
+    --sessions inputs/session_labels_$PROJECT.csv
 }
 
 function stage_2 {
@@ -105,7 +105,8 @@ test(){
   elif [[ "$2" == "-d" ]] || [[ "$2" == "--with-debug" ]]; then
     cmd="python3 -m pipenv run pytest --pdb run tests/integration_tests/test_run.py"
   else
-    echo $__test_usage
+    echo "$__test_usage"
+    exit
   fi
 
   case $1 in
@@ -113,19 +114,20 @@ test(){
       unit_test
       ;;
     "stage1")
-      stage_1 $cmd
+      stage_1 "$cmd"
       ;;
     "stage2")
-      stage_2 $cmd
+      stage_2 "$cmd"
       ;;
     "all")
       pre_stage_1
-      stage_1 $cmd
+      stage_1 "$cmd"
       populate_csv
-      stage_2 $cmd
+      stage_2 "$cmd"
       ;;
     *)
-      echo $__test_usage
+      echo "$__test_usage"
+      exit
       ;;
   esac
 }
