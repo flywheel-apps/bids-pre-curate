@@ -63,20 +63,21 @@ function unit_test {
 }
 function pre_stage_1 {
   ## Pre stage 1, clean and make new project
+  cd "$cwd"
   yes y | pipenv run python3 tests/integration_tests/delete_project.py --group "$GROUP" --project "$PROJECT" --data-only
   pipenv run python3 tests/BIDS_popup_curation/makesession.py --group "$GROUP" --project "$PROJECT" --subjects IVA_202,IVA_202-1,IVA_202-2
 }
 function stage_1 {
   ##################### Stage 1 integration testing
   # Build container as production
-  cd $cwd
+  cd "$cwd"
 #  run="python3 -m pdb tests/integration_tests/test_run.py"
   build_and_run_container "$1" tests/assets/config-stage1.json
 }
 
 function populate_csv {
   # Outputs are
-  cd $GEAR
+  cd "$GEAR"
   mv outputs/* inputs
   pipenv run python3 tests/integration_tests/populate_csv.py --sub-name IVA_202  \
     --acquisitions inputs/acquisition_labels_$PROJECT.csv \
@@ -105,8 +106,7 @@ test(){
   elif [[ "$2" == "-d" ]] || [[ "$2" == "--with-debug" ]]; then
     cmd="python3 -m pipenv run pytest --pdb run tests/integration_tests/test_run.py"
   else
-    echo "$__test_usage"
-    exit
+    cmd="python3 -m pipenv run pytest run tests/integration_tests/test_run.py"
   fi
 
   case $1 in
