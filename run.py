@@ -58,6 +58,7 @@ def main(gtk_context):
     inputs = validate_inputs(gtk_context)
 
     project = gtk_context.client.lookup(f'{group}/{project_label}')
+    log.info(f'Found project {group}/{project_label}')
     if inputs:
         # Make the id column the index for the dataframe
         acq_df = pd.read_csv(inputs[0])
