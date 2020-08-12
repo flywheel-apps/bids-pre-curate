@@ -6,7 +6,6 @@ git submodule update
 
 cwd=$(pwd)
 
-GEAR_DIR=/tmp/gear
 if [[ ! -a tests/integration_tests/requirements.txt ]]; then
   # Create requirements
   pipenv run pip freeze > tests/integration_tests/requirements.txt
@@ -16,8 +15,6 @@ if [[ ! -a tests/integration_tests/requirements.txt ]]; then
   pip install --user -r tests/integration_tests/requirements.txt
 fi
 
-sudo rm -rf $GEAR_DIR
-cp -r . $GEAR_DIR
 function build_and_run_container {
   VERSION=$(grep "version" manifest.json | sed "s/[^0-9._]//g")
   echo "$(pwd)"
@@ -51,11 +48,12 @@ function build_and_run_container {
     docker container rm bids-pre-curate
   fi
 
-
+  echo "Running command inside container: $1"
   docker run -it --rm --name bids-pre-curate \
     -v $GEAR/inputs:/flywheel/v0/inputs \
     -v $GEAR/outputs:/flywheel/v0/outputs \
     -v $GEAR/tests/assets/config.json:/flywheel/v0/config.json \
+    -v $GEAR/tests/integration_tests/user.json:/root/.config/flywheel/user.json \
     flywheel/bids-pre-curate:$VERSION "$1"
 }
 
@@ -72,9 +70,8 @@ function stage_1 {
   ##################### Stage 1 integration testing
   # Build container as production
   cd $cwd
-  run=$1
 #  run="python3 -m pdb tests/integration_tests/test_run.py"
-  build_and_run_container $run tests/assets/config-stage1.json
+  build_and_run_container "$1" tests/assets/config-stage1.json
 }
 
 function populate_csv {
@@ -91,9 +88,8 @@ function stage_2 {
   ##################### Stage 2 integration testing
 
   cd $cwd
-  run=$1
 #  run="python3 -m pdb tests/integration_tests/test_run.py"
-  build_and_run_container $run tests/assets/config-stage2.json
+  build_and_run_container "$1" tests/assets/config-stage2.json
 }
 __test_usage="
   ... test {unit_test,stage1,stage2,all} [opts]
@@ -158,7 +154,7 @@ run(){
     cmd=$pdb_cmd
     shift
   elif [[ $1 == 'full' ]]; then
-    cmd=$run_cmd
+    cmd="$run_cmd"
     shift
   else
     echo "$__run_usage"
@@ -166,21 +162,21 @@ run(){
   case "$1" in
     "-a" | "--all")
       pre_stage_1
-      stage_1 $cmd
+      stage_1 "$cmd"
       populate_csv
-      stage_2 $cmd
+      stage_2 "$cmd"
       ;;
     "-c" | "--clean")
       pre_stage_1
       ;;
     "-o" | "--stage-one")
-      stage_1 $cmd
+      stage_1 "$cmd"
       ;;
     "-s" | "--csv")
       populate_csv
       ;;
     "-t" | "--stage-two")
-      stage_2 $cmd
+      stage_2 "$cmd"
       ;;
     *)
       echo "$__run_usage"
