@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bfabf26d03f7423cb205506e740f336ee87a39b4206e94358dfdf7746b267f19"
+            "sha256": "053bfdcc4c440fb2a5b013f0d47e55d2aab235e8ce9177739f7fb8ad6cd38768"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -23,10 +23,6 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==19.3.0"
-        },
-        "bids-pre-curate": {
-            "editable": true,
-            "path": "."
         },
         "certifi": {
             "hashes": [
