@@ -59,7 +59,7 @@ function build_and_run_container {
 
 function unit_test {
   ##################### Unit Testing
-  pipenv run python3 -m pytest -s tests/unit_tests/test_bids_pre_curate.py
+  pipenv run python3 -m pytest  tests/unit_tests/test_bids_pre_curate.py
 }
 function pre_stage_1 {
   ## Pre stage 1, clean and make new project
