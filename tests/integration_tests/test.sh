@@ -59,7 +59,7 @@ function build_and_run_container {
 
 function unit_test {
   ##################### Unit Testing
-  python -m pytest tests/unit_tests/test_bids_pre_curate.py
+  pipenv run python3 -m pytest -s tests/unit_tests/test_bids_pre_curate.py
 }
 function pre_stage_1 {
   ## Pre stage 1, clean and make new project
@@ -120,6 +120,7 @@ test(){
       stage_2 "$cmd"
       ;;
     "all")
+      unit_test
       pre_stage_1
       stage_1 "$cmd"
       populate_csv
@@ -163,6 +164,7 @@ run(){
   fi
   case "$1" in
     "-a" | "--all")
+      unit_test
       pre_stage_1
       stage_1 "$cmd"
       populate_csv
