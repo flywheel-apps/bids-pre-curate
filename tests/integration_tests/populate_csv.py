@@ -17,6 +17,8 @@ def main(args):
     # Randomly, or intermittently populate values
     randoms = randint(2, size=acq_df.shape[0])
     for i, row in acq_df.iterrows():
+        # Used for testing pandas reading as int
+#        acq_df.at[i, 'new_acquisition_label'] =  1
         acq_df.at[i, 'new_acquisition_label'] =  \
             f"{make_file_name_safe(row['existing_acquisition_label'], re.compile('[^A-Za-z0-9]'), '')}"
 
