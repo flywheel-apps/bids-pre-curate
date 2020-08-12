@@ -63,8 +63,8 @@ function unit_test {
 }
 function pre_stage_1 {
   ## Pre stage 1, clean and make new project
-  yes y | python tests/integration_tests/delete_project.py --group "$GROUP" --project "$PROJECT" --data-only
-  python tests/BIDS_popup_curation/makesession.py --group "$GROUP" --project "$PROJECT" --subjects IVA_202,IVA_202-1,IVA_202-2
+  yes y | pipenv run python3 tests/integration_tests/delete_project.py --group "$GROUP" --project "$PROJECT" --data-only
+  pipenv run python3 tests/BIDS_popup_curation/makesession.py --group "$GROUP" --project "$PROJECT" --subjects IVA_202,IVA_202-1,IVA_202-2
 }
 function stage_1 {
   ##################### Stage 1 integration testing
