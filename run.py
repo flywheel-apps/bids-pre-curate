@@ -59,9 +59,9 @@ def main(gtk_context):
     log.info(f'Found project {group}/{project_label}')
     if inputs:
         # Make the id column the index for the dataframe
-        acq_df = pd.read_csv(inputs[0])
-        ses_df = pd.read_csv(inputs[1])
-        sub_df = pd.read_csv(inputs[2])
+        acq_df = pd.read_csv(inputs[0], dtype=str)
+        ses_df = pd.read_csv(inputs[1], dtype=str)
+        sub_df = pd.read_csv(inputs[2], dtype=str)
         bids_pre_curate.read_from_csv(acq_df, sub_df, ses_df, project ,config['dry_run'])
     else:
         fw = gtk_context.client
