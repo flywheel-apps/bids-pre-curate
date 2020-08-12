@@ -53,17 +53,39 @@ After running the script, '$GROUP/$PROJECT' should be named correctly and have m
 ### Fine grained testing
 The `test.sh` script has a number of options for running, its full usage is as follows:
 ```
-  Usage: test.sh <version> <to_run> [allows]
+   Usage: test.sh {run,shell,test}
 
-  <version>: Version to tag docker images with (required)
-  [allows]: Optional string of characters to add to the allow regex.
+  -h, --help    Print this message
 
-  to_run:
+  -------------------------------------------------
+  ... run {full,pdb} [opts]
+    Run with either full run or drop into PDB
+
+  opts:
     -a, --all         Run all tasks
     -c, --clean       Clean project and populate with new data
-    -h, --help        Print this message
     -o, --stage-one   Run stage 1 test
     -s, --csv         Populate csv for stage 2
     -t. --stage-two   Run stage 2 test
-    -u, --unit-test   Run unit tests
+
+  -------------------------------------------------
+  ... test {unit_test,stage1,stage2,all} [opts]
+    Use pytest to perform integration test on stage 1, stage 2 or full.
+
+  opts:
+    -d, --with-debug  Run pytest and drop to pdb on error
+    -c. --with-cov    Run pytest and print coverage report
+
+  -------------------------------------------------
+  ... shell
+    Enter bash shell in container
 ```
+
+In general, running stage2 without having first run clean will lead to an API error, since the subjects will have already
+been moved.  The recommended workflow is to run either `./tests/integration_tests/test.sh run full -a` or running in order
+1. `./tests/integration_tests/test.sh run full -c`
+2. `./tests/integration_tests/test.sh run full -o`
+3. `./tests/integration_tests/test.sh run full -s`
+4. `./tests/integration_tests/test.sh run full -t`
+
+And similarly for testing instead of running, either test all, or run clean and then test stage 1, then run csv and then stage 2
