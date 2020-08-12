@@ -1,6 +1,6 @@
 {
     "config": {
-        "allows": "",
+        "suggest": true,
         "dry_run": false
     },
     "inputs": {},

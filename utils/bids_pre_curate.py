@@ -14,7 +14,7 @@ from utils.fly.make_file_name_safe import make_file_name_safe
 log = logging.getLogger(__name__)
 
 
-def build_csv(acqs, subs, sess, proj_label,allows):
+def build_csv(acqs, subs, sess, proj_label,suggest=True):
     """Wrapper for building CSVs for project
 
         Subjects, sessions and acquisitions are passed in in the form of lists of
@@ -25,7 +25,7 @@ def build_csv(acqs, subs, sess, proj_label,allows):
         subs (list):  list of dicts containing subjects for the project.
         sess (list):  list of dicts containing sessions for the project
         proj_label (str):  project name (label)
-        allows (str): Characters to allow in file names.
+        suggest (bool): Whether or not to suggest a new label by removing spaces and special characters
 
     Returns:
         file_names (tuple): Tuple of filenames (full filepath) for all three csv files
@@ -36,17 +36,10 @@ def build_csv(acqs, subs, sess, proj_label,allows):
     #   otherwise it will be taken as a range, we need it to be taken literally
     #   so we add it at the end if it is in the allows string.
     # if the replacement is not a string or not safe, set replace_str to x
-    regex = r"[^A-Za-z0-9"
-    hyphen_in = '-' in allows
-    for char in allows:
-        if hyphen_in and char == '-':
-            continue
-        regex += char
-    regex += r"-]+" if hyphen_in else r"]+"
+    regex = r"[^A-Za-z0-9]"
     try:
         safe_patt = re.compile(regex)
     except re.error:
-        log.exception(f"Configuration value allows ({allows}) could not be processed. Exiting")
         sys.exit(1)
     log.info(f"Regex to use: {regex}")
     # proj_label = make_file_name_safe(proj_label)
@@ -61,7 +54,8 @@ def build_csv(acqs, subs, sess, proj_label,allows):
                         column_rename=['existing_acquisition_label'],
                         user_columns=['new_acquisition_label', 'modality', 'task', 'run', 'ignore'],
                         unique=['label'],
-                        old_new_index=[0,1])
+                        old_new_index=[0,1],
+                        suggest=suggest)
 
     # Sessions
     log.info('Building session CSV...')
@@ -72,7 +66,8 @@ def build_csv(acqs, subs, sess, proj_label,allows):
                          column_rename=['existing_session_label'],
                          user_columns=['new_session_label'],
                          unique=['label'],
-                         old_new_index=[0,1])
+                         old_new_index=[0,1],
+                         suggest=suggest)
 
     # Subjects
     log.info('Building subject CSV...')
@@ -82,13 +77,14 @@ def build_csv(acqs, subs, sess, proj_label,allows):
                         regex=safe_patt,
                         column_rename=['id', 'existing_subject_label'],
                         user_columns=['new_subject_label'],
-                        old_new_index=[1,2])
+                        old_new_index=[1,2],
+                        suggest=suggest)
     file_names = (acq_file[0], sess_file[0], sub_file[0])
     return file_names
 
 
 def data2csv(data, proj_label, keep_keys, prefix, regex, column_rename=[], user_columns=[],
-             unique=[], old_new_index=[0, 1], no_print=False):
+             unique=[], old_new_index=[0, 1], suggest=True,no_print=False):
     """Creates a CSV on passed in data
 
     Create a CSV of passed in data while specifying which keys should be kept,
@@ -117,6 +113,8 @@ def data2csv(data, proj_label, keep_keys, prefix, regex, column_rename=[], user_
             ex. if the columns of a df are ['existing_session_label',
                 'new_session_label','custom_data_1'], then
             old_new_index would be [0,1] since it maps column 0 to column 1.
+        suggest (boolean): whether or not to suggest new name by removing spaces
+            and special characters
         no_print (boolean): If true, don't print output csv's, just print
             dataframe
 
@@ -142,8 +140,9 @@ def data2csv(data, proj_label, keep_keys, prefix, regex, column_rename=[], user_
 
     if user_columns:
         data_df = data_df.reindex(columns=data_df.columns.tolist() + user_columns)
-    data_df.iloc[:, old_new_index[1]] = data_df.apply(
-        lambda row: suggest_new_name(row[old_new_index[0]],regex), axis=1)
+    if suggest:
+        data_df.iloc[:, old_new_index[1]] = data_df.apply(
+            lambda row: suggest_new_name(row[old_new_index[0]],regex), axis=1)
     csv_file = f'/tmp/{prefix}_{proj_label}.csv'
     if no_print:
         return (csv_file, data_df)

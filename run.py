@@ -18,9 +18,7 @@ def parse_config(context):
     conf_dict = {}
     config = context.config
     conf_dict['dry_run'] = config.get('dry_run', False)
-    conf_dict['allows'] = config.get('allows','')
-    if conf_dict['allows'] == '':
-        context.log.warning("Using default allows of only A-Z, a-z and 0-9")
+    conf_dict['suggest'] = config.get('suggest',True)
 
     return conf_dict
 
@@ -71,7 +69,7 @@ def main(gtk_context):
         sess = [ses.to_dict() for ses in fw.get_project_sessions(project.id)]
         subs = [sub.to_dict() for sub in fw.get_project_subjects(project.id)]
 
-        file_names = bids_pre_curate.build_csv(acqs, subs, sess, project.label,allows=config['allows'])
+        file_names = bids_pre_curate.build_csv(acqs, subs, sess, project.label,suggest=config['suggest'])
         if not os.path.exists(gtk_context.output_dir):
             try:
                 os.mkdir(gtk_context.output_dir)
