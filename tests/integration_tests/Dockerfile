@@ -9,7 +9,8 @@ WORKDIR ${FLYWHEEL}
 RUN pip install pipenv
 COPY Pipfile ./
 COPY Pipfile.lock ./
-RUN python3 -m pipenv install --system
+RUN python3 -m pipenv install
+
 
 # Save docker environ
 ENV PYTHONUNBUFFERED 1
