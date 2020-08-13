@@ -5,7 +5,8 @@ import flywheel
 import numpy as np
 import pandas as pd
 import pytest
-
+import sys
+sys.path.append(str(Path(__file__).parents[2].resolve()))
 from tests.BIDS_popup_curation.acquisitions import acquistions_object
 from tests.BIDS_popup_curation.sessions import session_object
 from utils.bids_pre_curate import (data2csv, handle_acquisitions,
