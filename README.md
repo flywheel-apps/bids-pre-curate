@@ -8,15 +8,17 @@ This gear can run at the project, subject or session level.
 It should initially be run at the project level to prepare the whole project for BIDS curation.  After that, changes can be made to specific subjects or sessions by running at the 
 [subject level](https://docs.flywheel.io/hc/en-us/articles/360038261213-Run-an-analysis-gear-on-a-subject) or
 [session level](https://docs.flywheel.io/hc/en-us/articles/360015505453-Analysis-Gears).
-To run at the project level, select the "Analyses" tab (at the top, between "Information" and "Data Views") then click on the "Run Analysis Gear" button and in the drop-down menut, look for the "BIDS Apps" section and select "BIDS Pre-Curate".  If you are looking at the project sessions there will be another "Analyses" tab and if you select that, there will also be a "Run Analysis Gear" button.  If you click that one, you will be running at the session level.  Similarly, if you are looking at the project sessions but have selected the Subject View button, there will another analysis tab that will show the button to run at the subject level.  See the links above for more information on running at those levels.
+To run at the project level, select the "Analyses" tab (at the top, between "Information" and "Data Views") then click on the "Run Analysis Gear" button and in the drop-down menu, look for the "BIDS Apps" section and select "BIDS Pre-Curate".  If you are looking at the project sessions there will be another "Analyses" tab and if you select that, there will also be a "Run Analysis Gear" button.  If you click that one, you will be running at the session level.  Similarly, if you are looking at the project sessions but have selected the Subject View button, there will another analysis tab that will show the button to run at the subject level.  See the links above for more information on running at those levels.
 
 Users will run pre-curate on their project data, this will generate csv files that will be populated with a unique list of container labels and the information we have about the files within, as well as slots for the information that we need (classification, task, etc.). 
 
-> This will be known as _Stage 1_, in Stage 1, suggested names are automatically populated in the new_[type]_label field.  These suggested names come from the allows set in the configuration.
+> This will be known as __Stage 1__, in Stage 1, suggested names _can_ be  automatically populated in the new_[type]_label field by selecting the 'suggest' configuration option.  These suggested names come from the allows set in the configuration.
 
 The user will then download and modify this csv-file (outside of Flywheel) to provide the missing/corrected information.
 
 The corrected csv file will then be uploaded to the project and provided as input to a run of this gear to do on-the-fly mappings to properly update metadata. 
+
+> This will be known as __Stage 2__.  In Stage 2, three CSV inputs will be provided (see __Inputs__ section)
 
 ### Inputs
 * 3 CSV files
@@ -45,9 +47,9 @@ From the root directory of the project run `./tests/integration_tests/test.sh ru
 1. Copy the project directory to `/tmp/gear`
 2. Run unit tests
 3. Remove and re-populate the project '$GROUP/$PROJECT' with dummy data in need of pre-curation
-4. Build the docker image and run phase 1 to export CSV
+4. Build the docker image and run stage 1 to export CSV
 5. Edit the CSVs to rename files trivially
-6. Build the docker container for the integration test and run phase 2 (renaming the files and updating metadata) 
+6. Build the docker container for the integration test and run stage 2 (renaming the files and updating metadata) 
 
 After running the script, '$GROUP/$PROJECT' should be named correctly and have metadata uploaded.
 
