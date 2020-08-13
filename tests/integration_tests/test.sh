@@ -64,7 +64,7 @@ function run_container {
     docker run -it --rm --name bids-pre-curate \
       -v $GEAR/inputs:/flywheel/v0/input \
       -v $GEAR/outputs:/flywheel/v0/output \
-      -v $GEAR/tests/integration_tests/user.json:/root/.config/flywheel/user.json \
+      -v ~/.config/flywheel/user.json:/root/.config/flywheel/user.json \
       flywheel/bids-pre-curate:$VERSION "$1" 2>&1
   fi
 }
