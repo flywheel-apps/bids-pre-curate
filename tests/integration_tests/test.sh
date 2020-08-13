@@ -2,8 +2,12 @@
 # Pull project creation script
 GROUP='scien'
 PROJECT='Nate-BIDS-pre-curate'
-git submodule update
-
+# If submodule empty, init and update.
+if [[ ! $(ls -A ) ]]; then
+    git submodule init
+    git submodule set-branch --branch nate tests/BIDS_popup_curation
+    git submodule update
+fi
 cwd=$(pwd)
 
 GEAR=/tmp/gear/flywheel/v0
