@@ -24,5 +24,6 @@ COPY run.py ${FLYWHEEL}/run.py
 
 # Configure entrypoint
 RUN chmod a+x ${FLYWHEEL}/run.py
-ENTRYPOINT ["/flywheel/v0/run.py"]
+ENTRYPOINT ["pipenv","run","python3","/flywheel/v0/run.py"]
+
 #ENTRYPOINT ["/bin/bash","-c"]

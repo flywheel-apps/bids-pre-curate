@@ -57,7 +57,7 @@
   "environment": {
     "PYTHONUNBUFFERED": "1"
   },
-  "command": "/flywheel/v0/run.py",
+  "command": "pipenv run python3 /flywheel/v0/run.py",
   "author": "Flywheel Exchange, LLC",
   "maintainer": "Flywheel <support@flywheel.io>",
   "license": "MIT",
