@@ -41,15 +41,16 @@ All three inputs would be optional, however if one is provided they should all b
 
 ## Testing
 ### Full integration testing
-First install dependencies, from the root dir after pipenv is installed (`python3 -m pip install pipenv`), run `pipenv install`.
 
 From the root directory of the project run `./tests/integration_tests/test.sh run full --all`.  This script will do the following:
 1. Copy the project directory to `/tmp/gear`
-2. Run unit tests
-3. Remove and re-populate the project '$GROUP/$PROJECT' with dummy data in need of pre-curation
-4. Build the docker image and run stage 1 to export CSV
-5. Edit the CSVs to rename files trivially
-6. Build the docker container for the integration test and run stage 2 (renaming the files and updating metadata) 
+2. Craete a docker container with the correct dependencies for testing
+3. Inside this container it will:
+    1. Run unit tests
+    2. Remove and re-populate the project '$GROUP/$PROJECT' with dummy data in need of pre-curation
+    3. Run stage 1 to export CSV
+    4. Edit the CSVs to rename files trivially
+    5. Run stage 2 (renaming the files and updating metadata) 
 
 After running the script, '$GROUP/$PROJECT' should be named correctly and have metadata uploaded.
 
