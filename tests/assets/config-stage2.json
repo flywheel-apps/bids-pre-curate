@@ -1,6 +1,5 @@
 {
     "config": {
-        "allows": "",
         "dry_run": false
     },
     "inputs": {
