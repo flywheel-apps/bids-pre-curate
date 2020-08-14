@@ -58,4 +58,6 @@ class TestWetRun:
 
 if __name__ == '__main__':
     gtk_context = flywheel_gear_toolkit.GearToolkitContext()
+    gtk_context.init_logging()
+    gtk_context.log_config()
     run.main(gtk_context)

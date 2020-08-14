@@ -2,13 +2,13 @@
 # Pull project creation script
 GROUP='scien'
 PROJECT='Nate-BIDS-pre-curate'
+cwd=$(pwd)
 # If submodule empty, init and update.
-if [[ ! $(ls -A ) ]]; then
+if [[ ! $(ls -A $cwd/tests/BIDS_popup_curation) ]]; then
     git submodule init
     git submodule set-branch --branch nate tests/BIDS_popup_curation
     git submodule update
 fi
-cwd=$(pwd)
 
 GEAR=/tmp/gear/flywheel/v0
 if [[ ! -a tests/integration_tests/requirements.txt ]]; then
@@ -62,14 +62,14 @@ function run_container {
       -v $GEAR/outputs:/flywheel/v0/output \
       -v "$GEAR/$2":/flywheel/v0/config.json \
       -v ~/.config/flywheel/user.json:/root/.config/flywheel/user.json \
-      flywheel/bids-pre-curate:$VERSION "$1" 2>&1
+      flywheel/bids-pre-curate:$VERSION "$1"
   else
     #Otherwise, run as just an image
     docker run -it --rm --name bids-pre-curate \
       -v $GEAR/inputs:/flywheel/v0/input \
       -v $GEAR/outputs:/flywheel/v0/output \
       -v ~/.config/flywheel/user.json:/root/.config/flywheel/user.json \
-      flywheel/bids-pre-curate:$VERSION "$1" 2>&1
+      flywheel/bids-pre-curate:$VERSION "$1"
   fi
 }
 
@@ -90,7 +90,7 @@ function stage_1 {
   ##################### Stage 1 integration testing
   # Build container as production
   cd "$cwd"
-#  run="python3 -m pdb tests/integration_tests/test_run.py"
+#  run="python3 -m pdb tests/integration_tests/test_run.py 2>&1"
   run_container "$1" tests/assets/config-stage1.json
 }
 
@@ -110,7 +110,7 @@ function stage_2 {
   ##################### Stage 2 integration testing
 
   cd $cwd
-#  run="python3 -m pdb tests/integration_tests/test_run.py"
+#  run="python3 -m pdb tests/integration_tests/test_run.py 2>&1"
   run_container "$1" tests/assets/config-stage2.json
 }
 __test_usage="
