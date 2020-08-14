@@ -24,7 +24,9 @@ __Important notes for Stage 1__:
         the BIDS name you want needs to be populated in the new_[container]_label
             
             e.g. acq-highres_run-01_T1w
- * 
+ *  The `ignore` column in the acquisitions spreadsheet is a place to ignore acquisitions from BIDS curation.
+    If yes or true (ignoring case) are put in this column, it will append `_ignore-BIDS` to the end of the acquisition
+    label which will cause the bids-curate gear to set the `ignore` field in the acquisition metadata.
 ##### Stage 2
 The user will then download and modify this csv-file (outside of Flywheel) to provide the missing/corrected information.
 
