@@ -14,7 +14,7 @@ from utils.fly.make_file_name_safe import make_file_name_safe
 log = logging.getLogger(__name__)
 
 
-def build_csv(acqs, subs, sess, proj_label,suggest=True):
+def build_csv(acqs, subs, sess, proj_label,suggest=True,allows='_-'):
     """Wrapper for building CSVs for project
 
         Subjects, sessions and acquisitions are passed in in the form of lists of
@@ -36,7 +36,13 @@ def build_csv(acqs, subs, sess, proj_label,suggest=True):
     #   otherwise it will be taken as a range, we need it to be taken literally
     #   so we add it at the end if it is in the allows string.
     # if the replacement is not a string or not safe, set replace_str to x
-    regex = r"[^A-Za-z0-9]"
+    regex = r"[^A-Za-z0-9"
+    hyphen_in = '-' in allows
+    for char in allows:
+        if hyphen_in and char == '-':
+            continue
+        regex += char
+    regex += r"-]+" if hyphen_in else r"]+"
     try:
         safe_patt = re.compile(regex)
     except re.error:

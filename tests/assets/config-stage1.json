@@ -1,7 +1,8 @@
 {
     "config": {
         "suggest": true,
-        "dry_run": false
+        "dry_run": false,
+        "allows": "_- "
     },
     "inputs": {},
     "destination": {

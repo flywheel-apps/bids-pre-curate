@@ -46,6 +46,9 @@ __NONE__
     2. subject_table
     3. acquisition_table
 
+These files should be uploaded at the project level: In the main UI select the project, choose the information tab
+and click `Upload Attachment` under `Attachments`
+
 
 ## Outputs
 
@@ -62,6 +65,9 @@ __NONE__
 > dry_run only applies to stage 2
 * suggest (boolean): __default: true__, Whether or not to suggest new names by removing all spaces and special characters.
 > suggest only applies to stage 1
+* allows (string): **default: '_-'**, String of characters to allow in names when suggesting new names.  Defaults to 
+underscores and hyphens.  Spaces can be allowed by adding a space in this config option.
+> allows only applies to stage 1 when suggest is checked.
 
 ## Testing
 ### Full integration testing

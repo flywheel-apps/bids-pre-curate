@@ -52,6 +52,11 @@
       "default": true,
       "description": "Whether or not to suggest new names by removing spaces and special characters from names",
       "type": "boolean"
+    },
+    "allows": {
+      "default": "_-",
+      "description": "Characters that will be allowed in names when suggesting new names",
+      "type": "string"
     }
   },
   "environment": {
