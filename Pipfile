@@ -4,15 +4,14 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pytest = "*"
+pytest-mock = "*"
+pytest-cov = "*"
 
 [packages]
 flywheel-sdk = "~=12.1.1"
 flywheel-gear-toolkit = "~=0.1.0rc4"
 pandas = "~=1.0.5"
-bids-pre-curate = {editable = true, path = "."}
-pytest = "*"
-pytest-mock = "*"
-pytest-cov = "*"
 
 [requires]
 python_version = "3.8"

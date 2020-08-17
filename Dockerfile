@@ -2,15 +2,16 @@ FROM python:3.8-buster as base
 
 LABEL maintainer="support@flywheel.io"
 
-COPY requirements.txt /tmp
-RUN pip install -r /tmp/requirements.txt
-
 
 # Make directory for flywheel spec (v0)
 ENV FLYWHEEL /flywheel/v0
 WORKDIR ${FLYWHEEL}
 
-
+# Install dependencies
+RUN pip install pipenv
+COPY Pipfile ./
+COPY Pipfile.lock ./
+RUN python3 -m pipenv install
 # Save docker environ
 ENV PYTHONUNBUFFERED 1
 
@@ -23,5 +24,6 @@ COPY run.py ${FLYWHEEL}/run.py
 
 # Configure entrypoint
 RUN chmod a+x ${FLYWHEEL}/run.py
-ENTRYPOINT ["/flywheel/v0/run.py"]
+ENTRYPOINT ["pipenv","run","python3","/flywheel/v0/run.py"]
+
 #ENTRYPOINT ["/bin/bash","-c"]

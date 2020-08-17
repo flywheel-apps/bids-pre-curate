@@ -6,8 +6,12 @@ import json
 import logging
 import os
 import shutil
+import sys
 from pathlib import Path
 from pprint import pprint
+import pytest
+
+sys.path.append(str(Path(__file__).parents[2].resolve()))
 
 import flywheel_gear_toolkit
 import pandas as pd
@@ -15,38 +19,45 @@ import pandas as pd
 import run
 import utils.bids_pre_curate
 
-gtk_context = flywheel_gear_toolkit.GearToolkitContext()
-gtk_context.init_logging()
-
-log = gtk_context.log
-log.info('Test')
-
-project = gtk_context.client.lookup('scien/Nate-BIDS-pre-curate')
-inputs = run.validate_inputs(gtk_context)
-log.info('Validated inputs')
-
-acq_df = pd.read_csv(inputs[0]).fillna('')
-ses_df = pd.read_csv(inputs[1]).fillna('')
-sub_df = pd.read_csv(inputs[2]).fillna('')
 
 
-log.info('Finished loading data')
-#print(acq_df)
-#print(ses_df)
-#print(sub_df)
 
 
-def test():
-    #test_bids_curate.run()
-    utils.bids_pre_curate.handle_acquisitions(acq_df,gtk_context.client,project,dry_run=True)
-    log.info('Finished handle_acquisitions')
-    utils.bids_pre_curate.handle_sessions(ses_df, gtk_context.client, project, dry_run=True)
-    log.info('Finished handle_sessions')
-    utils.bids_pre_curate.handle_subjects(sub_df, gtk_context.client, project, dry_run=True)
-    log.info('Finished handle_subjects')
-
-    utils.bids_pre_curate.read_from_csv(acq_df,sub_df,ses_df,project)
-    log.info('Finished read_from_csv')
-test()
 
 
+
+
+
+@pytest.fixture
+def gtk_context():
+    return flywheel_gear_toolkit.GearToolkitContext()
+
+class TestWetRun:
+    def test_wet_run(self, gtk_context):
+        acq = gtk_context.get_input_path('acquisition_table')
+        ses = gtk_context.get_input_path('session_table')
+        sub = gtk_context.get_input_path('subject_table')
+        if acq and ses and sub:
+            # All inputs provided, there should be no outputs
+            run.main(gtk_context)
+            outdir = Path(gtk_context.output_dir)
+            assert len(os.listdir(outdir)) == 0
+        elif not (acq or ses or sub):
+            # No inputs provided, there should be three outputs
+            run.main(gtk_context)
+            outdir = Path(gtk_context.output_dir)
+            outfiles = os.listdir(outdir)
+            assert len(outfiles) == 3
+        else:
+            # Raise system exit when not all three or none are provided
+            with pytest.raises(SystemExit):
+                run.main(gtk_context)
+                assert True
+
+#        if gtk_context.config:
+
+if __name__ == '__main__':
+    gtk_context = flywheel_gear_toolkit.GearToolkitContext()
+    gtk_context.init_logging()
+    gtk_context.log_config()
+    run.main(gtk_context)

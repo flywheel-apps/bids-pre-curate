@@ -18,9 +18,9 @@ def parse_config(context):
     conf_dict = {}
     config = context.config
     conf_dict['dry_run'] = config.get('dry_run', False)
-    conf_dict['allows'] = config.get('allows','')
-    if conf_dict['allows'] == '':
-        context.log.warning("Using default allows of only A-Z, a-z and 0-9")
+    conf_dict['suggest'] = config.get('suggest',True)
+    conf_dict['allows'] = config.get('allows','_-')
+
 
     return conf_dict
 
@@ -58,11 +58,12 @@ def main(gtk_context):
     inputs = validate_inputs(gtk_context)
 
     project = gtk_context.client.lookup(f'{group}/{project_label}')
+    log.info(f'Found project {group}/{project_label}')
     if inputs:
         # Make the id column the index for the dataframe
-        acq_df = pd.read_csv(inputs[0])
-        ses_df = pd.read_csv(inputs[1])
-        sub_df = pd.read_csv(inputs[2])
+        acq_df = pd.read_csv(inputs[0], dtype=str)
+        ses_df = pd.read_csv(inputs[1], dtype=str)
+        sub_df = pd.read_csv(inputs[2], dtype=str)
         bids_pre_curate.read_from_csv(acq_df, sub_df, ses_df, project ,config['dry_run'])
     else:
         fw = gtk_context.client
@@ -70,7 +71,9 @@ def main(gtk_context):
         sess = [ses.to_dict() for ses in fw.get_project_sessions(project.id)]
         subs = [sub.to_dict() for sub in fw.get_project_subjects(project.id)]
 
-        file_names = bids_pre_curate.build_csv(acqs, subs, sess, project.label,allows=config['allows'])
+        file_names = bids_pre_curate.build_csv(acqs, subs, sess, project.label,
+                                               suggest=config['suggest'],
+                                               allows=config['allows'])
         if not os.path.exists(gtk_context.output_dir):
             try:
                 os.mkdir(gtk_context.output_dir)

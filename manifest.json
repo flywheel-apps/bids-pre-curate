@@ -2,12 +2,12 @@
   "name": "bids-pre-curate",
   "label": "BIDS Pre-Curate: Project preparation for BIDS curation",
   "description": "Re-naming of containers and modification of classification of data based on user-input on a bulk scale",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "custom": {
-    "docker-image": "flywheel/bids-pre-curate:0.1.1",
+    "docker-image": "flywheel/bids-pre-curate:0.1.2",
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/bids-pre-curate:0.1.1"
+      "image": "flywheel/bids-pre-curate:0.1.2"
     },
     "flywheel": {
         "suite": "BIDS Apps"
@@ -48,16 +48,21 @@
       "description": "Whether or not to perform a dry run, logging what would be changed without actually changing it.",
       "type": "boolean"
     },
+    "suggest": {
+      "default": true,
+      "description": "Whether or not to suggest new names by removing spaces and special characters from names",
+      "type": "boolean"
+    },
     "allows": {
-      "default": "._-",
-      "description": "Characters to allow in subject, session, and acquisition names.  Default allows periods (.), underscores (_) and hyphens (-).",
+      "default": "_-",
+      "description": "Characters that will be allowed in names when suggesting new names",
       "type": "string"
     }
   },
   "environment": {
     "PYTHONUNBUFFERED": "1"
   },
-  "command": "/flywheel/v0/run.py",
+  "command": "pipenv run python3 /flywheel/v0/run.py",
   "author": "Flywheel Exchange, LLC",
   "maintainer": "Flywheel <support@flywheel.io>",
   "license": "MIT",

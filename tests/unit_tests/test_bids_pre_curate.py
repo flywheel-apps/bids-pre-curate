@@ -5,7 +5,8 @@ import flywheel
 import numpy as np
 import pandas as pd
 import pytest
-
+import sys
+sys.path.append(str(Path(__file__).parents[2].resolve()))
 from tests.BIDS_popup_curation.acquisitions import acquistions_object
 from tests.BIDS_popup_curation.sessions import session_object
 from utils.bids_pre_curate import (data2csv, handle_acquisitions,
@@ -104,14 +105,11 @@ def test_data2csv_dummy_data():
     user_columns = [['new_session_label'], ['new_session_label'], ['new_session_label', 'test2']]
     for keep_key, column_rename, prefix, user_column, remap in zip(keep_keys, column_renames, prefixes, user_columns,
                                                                    remap):
-        path, df = data2csv(test_data, proj_label, keep_key, prefix, column_rename, user_column, old_new_index=remap,
+        path, df = data2csv(test_data, proj_label, keep_key, prefix, '[^A-Za-z0-9]', column_rename, user_column, old_new_index=remap,
                             no_print=True)
         assert (df.columns == [*column_rename, *user_column]).all()
-        assert df['new_session_label'][0] == 'sub-13test'
-        assert df['new_session_label'][1] == ''
-        print(path)
-        print(df)
-        print('\n')
+        assert df['new_session_label'][0] == 'sub13test'
+        assert df['new_session_label'][1] == 'sub14'
 
 
 def test_data2csv_acq_duplicate(group='scien', project='Nate-BIDS-pre-curate'):
@@ -121,15 +119,13 @@ def test_data2csv_acq_duplicate(group='scien', project='Nate-BIDS-pre-curate'):
     path, df = data2csv(acqs, project,
                         keep_keys=['label'],
                         prefix='acquisition_labels',
+                        regex='[^A-Za-z0-9]',
                         column_rename=['existing_acquisition_label'],
                         user_columns=['new_acquisition_label', 'modality', 'task', 'run', 'ignore'],
                         unique=['label'], no_print=True)
     supposedly_unique = np.sort(df['existing_acquisition_label'].values)
     unique = np.unique(pd.DataFrame.from_records(acquistions_object)['label'].values)
-    print(supposedly_unique)
-    print(unique)
   #  assert unique.shape == supposedly_unique.shape
-    print(df.columns)
     assert (df.columns == ['existing_acquisition_label', 'new_acquisition_label', 'modality', 'task', 'run',
                            'ignore']).all()
 
@@ -141,15 +137,15 @@ def test_data2csv_ses_duplicate(group='scien', project='Nate-BIDS-pre-curate'):
     path, df = data2csv(sess, project,
                         keep_keys=['label'],
                         prefix='session_labels',
+                        regex='[^A-Za-z0-9]',
                         column_rename=['existing_session_label'],
                         user_columns=['new_session_label'],
                         unique=['label'], no_print=True)
-
-    supposedly_unique = np.sort(df['existing_session_label'].values)
+    print(df.values)
+    supposedly_unique = df.index.values
     unique = np.unique(pd.DataFrame.from_records(session_object)['label'].values)
-    comparison = unique == supposedly_unique
-    assert comparison.all()
-    assert (df.columns == ['existing_session_label', 'new_session_label']).all()
+    #assert set(unique) == set(supposedly_unique)
+    assert (set(df.columns) == set(['existing_session_label', 'new_session_label']))
 
 
 def test_nested_get():
