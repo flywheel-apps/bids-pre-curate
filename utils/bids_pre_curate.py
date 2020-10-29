@@ -197,8 +197,10 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
     for index, row in acq_df.iterrows():
         # Since len(rows) != len(project.acquisitions), need to find all acquisitions
         #   in the project for each row in the acquisition dataframe.
-        acquisitions_for_row = fw.acquisitions.find(
-            f"parents.project={project.id},label={row['existing_acquisition_label']}")
+        #If names are numeric, the value has to be wrapped in double quotes
+        find_string = 'parents.project='+project.id+',label="' \
+            +row['existing_acquisition_label']+'"'
+        acquisitions_for_row = fw.acquisitions.find(find_string)
         # print(row['existing_acquisition_label'],len(acquisitions_for_row))
 
         for acquisition in acquisitions_for_row:
@@ -232,7 +234,9 @@ def handle_sessions(ses_df, fw, project, dry_run=False):
     for index, row in ses_df.iterrows():
         # Since len(rows) != len(project.sessions), need to find all sessions
         #   in the project for each row in the session dataframe.
-        sessions_for_row = fw.sessions.find(f"parents.project={project.id},label={row['existing_session_label']}")
+        find_string = 'parents.project='+project.id+',label="' \
+            +row['existing_session_label']+'"'
+        sessions_for_row = fw.sessions.find(find_string)
         for session in sessions_for_row:
             # If session name should change
             if row.get('new_session_label'):
@@ -261,7 +265,7 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
     for unique_subj in unique_subjs:
         if make_file_name_safe(unique_subj, '') != unique_subj:
             log.warning(f"Subject label f{unique_subj} may not be BIDS compliant")
-        existing_subj = project.subjects.find_first(f'label={unique_subj}')
+        existing_subj = project.subjects.find_first(f'label="{unique_subj}"')
         # Iterate over existing subjects that are supposed to have the same new_subject_label
         #   These are sessions that were misnamed and entered as subjects.
         #   All of these *subjects*  need to be converted to sessions under the new_subject_label subject
