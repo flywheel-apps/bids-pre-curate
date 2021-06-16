@@ -115,7 +115,7 @@ def test_data2csv_dummy_data():
 def test_data2csv_acq_duplicate(group='scien', project='Nate-BIDS-pre-curate'):
     fw = flywheel.Client()
     proj = fw.lookup(f'{group}/{project}')
-    acqs = [acq.to_dict() for acq in fw.get_project_acquisitions(proj.id)]
+    acqs = [acq.to_dict() for acq in fw.acquisitions.find(f"project={project.id}")]
     path, df = data2csv(acqs, project,
                         keep_keys=['label'],
                         prefix='acquisition_labels',

@@ -67,7 +67,7 @@ def main(gtk_context):
         bids_pre_curate.read_from_csv(acq_df, sub_df, ses_df, project ,config['dry_run'])
     else:
         fw = gtk_context.client
-        acqs = [acq.to_dict() for acq in fw.get_project_acquisitions(project.id)]
+        acqs = [acq.to_dict() for acq in fw.acquisitions.find(f"project={project.id}")]
         sess = [ses.to_dict() for ses in fw.get_project_sessions(project.id)]
         subs = [sub.to_dict() for sub in fw.get_project_subjects(project.id)]
 
