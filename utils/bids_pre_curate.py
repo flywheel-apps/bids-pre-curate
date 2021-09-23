@@ -290,6 +290,18 @@ def handle_subjects(subj_df, fw, project, dry_run=False):
                 existing_subj = new_subj
             else:
                 for session in new_subj.sessions.iter():
+                    existing_session = existing_subj.sessions.find_first(
+                            f'label={session.label}'
+                    )
+                    # Check for a session with the same name in the destination
+                    # this would cause a 409 error if we try to update the
+                    # parent session, and lead to FLYW-8972
+                    if existing_session:
+                        log.warning(
+                            f'Refusing to move session {session.label} as it '
+                            f'would duplicate a session in {existing_subj.label}'
+                        )
+                        continue
                     # Change all sessions to point to the existing subject
                     to_update = {
                         'subject': {
