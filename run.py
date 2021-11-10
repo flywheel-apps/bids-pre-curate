@@ -43,7 +43,6 @@ def main(gtk_context):
     log = gtk_context.log
     dest = gtk_context.client.get_analysis(gtk_context.destination['id'])
     run_level = dest.parent['type']
-    hierarchy = dest.parents
     if run_level not in ['project', 'subject']:
         raise RuntimeError(
             'Cannot run at {run_level} level, please run at'
