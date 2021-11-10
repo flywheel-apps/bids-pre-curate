@@ -163,8 +163,6 @@ def suggest_new_name(existing_label,regex):
         return ''
 
 
-
-
 def keep_specified_keys(data, keep_keys):
     kept_data = []
     for datum in data:
@@ -177,7 +175,14 @@ def keep_specified_keys(data, keep_keys):
     return kept_data
 
 
-def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
+def read_from_csv(
+    acq_df,
+    subj_df,
+    ses_df,
+    run_level,
+    hierarchy,
+    dry_run=False,
+):
     context = flywheel_gear_toolkit.GearToolkitContext()
     fw = context.client
     # TODO: Need to do some validation to make sure the CSV file is in the correct format
@@ -187,20 +192,29 @@ def read_from_csv(acq_df, subj_df, ses_df, project, dry_run=False):
     acq_df.fillna('',inplace=True)
     ses_df.fillna('',inplace=True)
     subj_df.fillna('',inplace=True)
-    handle_acquisitions(acq_df, fw, project, dry_run)
-    handle_sessions(ses_df, fw, project, dry_run)
-    handle_subjects(subj_df, fw, project, dry_run)
+    handle_acquisitions(
+        acq_df, fw, run_level, hierarchy, dry_run
+    )
+    handle_sessions(
+        ses_df, fw, run_level, hierarchy, dry_run
+    )
+    handle_subjects(
+        subj_df, fw, run_level, hierarchy, dry_run
+    )
 
 
-def handle_acquisitions(acq_df, fw, project, dry_run=False):
+def handle_acquisitions(
+    acq_df, fw, run_level, hierarchy, dry_run=False
+):
+    base_find = f"parents.{run_level}={hierarchy[run_level]}"
     # Acquisitions
     for index, row in acq_df.iterrows():
         # Since len(rows) != len(project.acquisitions), need to find all acquisitions
         #   in the project for each row in the acquisition dataframe.
         #If names are numeric, the value has to be wrapped in double quotes
-        find_string = 'parents.project='+project.id+',label="' \
-            +row['existing_acquisition_label']+'"'
-        acquisitions_for_row = fw.acquisitions.find(find_string)
+        find_string = f"{base_find},label=\"{row['existing_acquisition_label']}\""
+        acquisitions_for_row = fw.acquisitions.iter_find(find_string)
+
         # print(row['existing_acquisition_label'],len(acquisitions_for_row))
 
         for acquisition in acquisitions_for_row:
@@ -229,13 +243,13 @@ def handle_acquisitions(acq_df, fw, project, dry_run=False):
 
 
 
-def handle_sessions(ses_df, fw, project, dry_run=False):
+def handle_sessions(ses_df, fw, run_level, hierarchy, dry_run=False):
     # Sessions
+    base_find = f"parents.{run_level}={hierarchy[run_level]}"
     for index, row in ses_df.iterrows():
         # Since len(rows) != len(project.sessions), need to find all sessions
         #   in the project for each row in the session dataframe.
-        find_string = 'parents.project='+project.id+',label="' \
-            +row['existing_session_label']+'"'
+        find_string = f"{base_find},label=\"{row['existing_session_label']}\""
         sessions_for_row = fw.sessions.find(find_string)
         for session in sessions_for_row:
             # If session name should change
@@ -258,10 +272,14 @@ def handle_sessions(ses_df, fw, project, dry_run=False):
                     session.update({'label': new_ses_name})
 
 
-def handle_subjects(subj_df, fw, project, dry_run=False):
+def handle_subjects(subj_df, fw, run_level, hierarchy, dry_run=False):
+    if run_level == 'subject':
+        log.info('Running at subject level, not adjusting subjects.')
+        return
     subj_df.loc[subj_df['new_subject_label'] == '', 'new_subject_label'] = subj_df['existing_subject_label']
     # new_subject_label column should be all unique subjects
     unique_subjs = pd.unique(subj_df['new_subject_label'])
+    project = fw.get_project(hierarchy['project'])
     for unique_subj in unique_subjs:
         if make_file_name_safe(unique_subj, '') != unique_subj:
             log.warning(f"Subject label f{unique_subj} may not be BIDS compliant")

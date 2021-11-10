@@ -4,10 +4,10 @@ of data based on user-input on a bulk scale.
 
 ## Workflow
 
-This gear can run at the project, subject or session level.
+This gear can run at the project, or subject level.
 It should initially be run at the project level to prepare the whole project for BIDS curation.  After that, changes can be made to specific subjects or sessions by running at the 
 
-To run at the project level, select the "Analyses" tab (at the top, between "Information" and "Data Views") then click on the "Run Analysis Gear" button and in the drop-down menu, look for the "BIDS Apps" section and select "BIDS Pre-Curate".  For now, the __gear only runs at the project level__. 
+To run at the project level, select the "Analyses" tab (at the top, between "Information" and "Data Views") then click on the "Run Analysis Gear" button and in the drop-down menu, look for the "BIDS Apps" section and select "BIDS Pre-Curate".
 ##### Stage 1
 Users will run pre-curate on their project data, this will generate csv files that will be populated with a unique list of container labels and the information we have about the files within, as well as slots for the information that we need (classification, task, etc.). 
 
