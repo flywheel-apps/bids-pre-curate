@@ -74,11 +74,9 @@ def main(gtk_context):
             acq_df,
             sub_df,
             ses_df,
-            project,
             run_level,
             hierarchy,
             config['dry_run'],
-            config['reset']
         )
     else:
         fw = gtk_context.client

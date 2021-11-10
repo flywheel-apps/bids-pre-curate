@@ -179,11 +179,9 @@ def read_from_csv(
     acq_df,
     subj_df,
     ses_df,
-    project,
     run_level,
     hierarchy,
     dry_run=False,
-    reset=False
 ):
     context = flywheel_gear_toolkit.GearToolkitContext()
     fw = context.client
@@ -195,19 +193,18 @@ def read_from_csv(
     ses_df.fillna('',inplace=True)
     subj_df.fillna('',inplace=True)
     handle_acquisitions(
-        acq_df, fw, project, run_level, hierarchy, dry_run, reset
+        acq_df, fw, run_level, hierarchy, dry_run
     )
     handle_sessions(
-        ses_df, fw, project, run_level, hierarchy, dry_run, reset
+        ses_df, fw, run_level, hierarchy, dry_run
     )
     handle_subjects(
-        subj_df, fw, project, run_level, hierarchy, dry_run, reset
+        subj_df, fw, run_level, hierarchy, dry_run
     )
 
 
 def handle_acquisitions(
-    acq_df, fw, run_level, hierarchy,
-    dry_run=False
+    acq_df, fw, run_level, hierarchy, dry_run=False
 ):
     base_find = f"parents.{run_level}={hierarchy[run_level]}"
     # Acquisitions
