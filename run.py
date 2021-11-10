@@ -41,12 +41,18 @@ def validate_inputs(context):
 
 def main(gtk_context):
     log = gtk_context.log
-    hierarchy = get_run_level_and_hierarchy(
-        gtk_context.client, gtk_context.destination["id"]
-    )
-    if hierarchy['group'] and hierarchy['project_label']:
+    dest = gtk_context.client.get_analysis(gtk_context.destination['id'])
+    run_level = dest.parent['type']
+    hierarchy = dest.parents
+    if run_level not in ['project', 'subject']:
+        raise RuntimeError(
+            'Cannot run at {run_level} level, please run at'
+            ' subject or project level'
+        )
+    hierarchy = dest.parents
+    if hierarchy['group'] and hierarchy['project']:
         group = hierarchy['group']
-        project_label = hierarchy['project_label']
+        project = hierarchy['project']
     else:
         log.exception('Unable to determine run level and hierarchy, exiting')
         sys.exit(1)
@@ -57,14 +63,23 @@ def main(gtk_context):
     config = parse_config(gtk_context)
     inputs = validate_inputs(gtk_context)
 
-    project = gtk_context.client.lookup(f'{group}/{project_label}')
-    log.info(f'Found project {group}/{project_label}')
+    project = gtk_context.client.get_project(hierarchy['project'])
+    log.info(f'Found project {group}/{project.label}')
     if inputs:
         # Make the id column the index for the dataframe
         acq_df = pd.read_csv(inputs[0], dtype=str)
         ses_df = pd.read_csv(inputs[1], dtype=str)
         sub_df = pd.read_csv(inputs[2], dtype=str)
-        bids_pre_curate.read_from_csv(acq_df, sub_df, ses_df, project ,config['dry_run'])
+        bids_pre_curate.read_from_csv(
+            acq_df,
+            sub_df,
+            ses_df,
+            project,
+            run_level,
+            hierarchy,
+            config['dry_run'],
+            config['reset']
+        )
     else:
         fw = gtk_context.client
         acqs = [acq.to_dict() for acq in fw.get_project_acquisitions(project.id)]
