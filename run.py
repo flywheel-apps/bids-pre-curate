@@ -58,6 +58,8 @@ def main(gtk_context):
         #group = 'scien'
         #project_label = 'Nate-BIDS-pre-curate'
 
+    msg = 'a single subject' if run_level == 'subject' else 'the whole project'
+    log.info(f"Running on {msg}")
 
     config = parse_config(gtk_context)
     inputs = validate_inputs(gtk_context)
