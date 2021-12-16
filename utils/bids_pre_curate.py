@@ -212,7 +212,7 @@ def handle_acquisitions(
         # Since len(rows) != len(project.acquisitions), need to find all acquisitions
         #   in the project for each row in the acquisition dataframe.
         #If names are numeric, the value has to be wrapped in double quotes
-        find_string = f"{base_find},label=\"*{row['existing_acquisition_label']}\""
+        find_string = f"{base_find},label=\"=~{row['existing_acquisition_label']}\""
         acquisitions_for_row = fw.acquisitions.iter_find(find_string)
 
         # print(row['existing_acquisition_label'],len(acquisitions_for_row))
