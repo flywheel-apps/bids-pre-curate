@@ -115,7 +115,7 @@ def data2csv(data, proj_label, keep_keys, prefix, regex, column_rename=[], user_
             to add to the csv
         unique (list,optional): If specified, find unique entries on the
             given indices.
-        old_new_index (list): Mapping for columns of the existig to new names,
+        old_new_index (list): Mapping for columns of the existing to new names,
             ex. if the columns of a df are ['existing_session_label',
                 'new_session_label','custom_data_1'], then
             old_new_index would be [0,1] since it maps column 0 to column 1.
@@ -212,7 +212,7 @@ def handle_acquisitions(
         # Since len(rows) != len(project.acquisitions), need to find all acquisitions
         #   in the project for each row in the acquisition dataframe.
         #If names are numeric, the value has to be wrapped in double quotes
-        find_string = f"{base_find},label=\"{row['existing_acquisition_label']}\""
+        find_string = f"{base_find},label=\"*{row['existing_acquisition_label']}\""
         acquisitions_for_row = fw.acquisitions.iter_find(find_string)
 
         # print(row['existing_acquisition_label'],len(acquisitions_for_row))

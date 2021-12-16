@@ -45,8 +45,8 @@ def main(gtk_context):
     run_level = dest.parent['type']
     if run_level not in ['project', 'subject']:
         raise RuntimeError(
-            'Cannot run at {run_level} level, please run at'
-            ' subject or project level'
+            'Cannot run at %s level, please run at'
+            ' subject or project level', run_level
         )
     hierarchy = dest.parents
     if hierarchy['group'] and hierarchy['project']:
