@@ -81,7 +81,7 @@ def main(gtk_context):
         )
     else:
         fw = gtk_context.client
-        acqs = [acq.to_dict() for acq in fw.get_project_acquisitions(project.id)]
+        acqs = [acq.to_dict() for acq in fw.acquisitions.find(f"parents.project={project.id}")]
         sess = [ses.to_dict() for ses in fw.get_project_sessions(project.id)]
         subs = [sub.to_dict() for sub in fw.get_project_subjects(project.id)]
 
