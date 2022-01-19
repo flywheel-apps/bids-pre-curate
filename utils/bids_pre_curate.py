@@ -176,7 +176,7 @@ def data2csv(
     data_df.to_csv(csv_file, index_label=False, index=False)
     return (csv_file,)
 
-def generalize_find_string(find_str):
+def generalize_find_str(find_str):
     """
     Locate the main substring that identifies the sequence. (I.e., eliminate series numbers from
     a substring match.)
@@ -212,7 +212,7 @@ def handle_acquisitions(acq_df, fw, run_level, hierarchy, dry_run=False):
         # Since len(rows) != len(project.acquisitions), need to find all acquisitions
         #   in the project for each row in the acquisition dataframe.
         # If names are numeric, the value has to be wrapped in double quotes
-        existing_acq_label = generalize_find_string(row['existing_acquisition_label'])
+        existing_acq_label = generalize_find_str(row['existing_acquisition_label'])
         find_str = f"{base_find},label=\"=~{existing_acq_label}\""
         acquisitions_for_row = fw.acquisitions.iter_find(find_str)
 
