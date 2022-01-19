@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "bids-pre-curate"
+version = "0.2.1"
+description = "Tool to convert acquisition labels to ReproIn using plain text entries"
+authors = ["Flywheel <support@flywheel.io>"]
+readme = "README.md"
+license = "MIT"
+keywords = [
+    "Flywheel",
+    "Gears"
+]
+repository = "https://github.com/flywheel-apps/bids-pre-curate"
+classifiers = [
+    "Topic :: Scientific/Engineering"
+]
+
+[tool.poetry.dependencies]
+python = "==3.8"
+flywheel-gear-toolkit = "==0.1.*,>=0.1.0.rc4"
+flywheel-sdk = "==12.1.*,>=12.1.1"
+pandas = "==1.0.*,>=1.0.5"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+pytest-cov = "*"
+pytest-mock = "*"
