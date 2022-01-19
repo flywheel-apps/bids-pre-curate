@@ -9,7 +9,8 @@ import sys
 sys.path.append(str(Path(__file__).parents[2].resolve()))
 from tests.BIDS_popup_curation.acquisitions import acquistions_object
 from tests.BIDS_popup_curation.sessions import session_object
-from utils.bids_pre_curate import (data2csv, handle_acquisitions,
+from utils.bids_pre_curate import (data2csv, generalize_find_str,
+                                   handle_acquisitions,
                                    handle_sessions, handle_subjects,
                                    keep_specified_keys)
 from utils.deep_dict import nested_get
@@ -147,6 +148,17 @@ def test_data2csv_ses_duplicate(group='scien', project='Nate-BIDS-pre-curate'):
     #assert set(unique) == set(supposedly_unique)
     assert (set(df.columns) == set(['existing_session_label', 'new_session_label']))
 
+@pytest.mark.parametrize('mock_str, expected_outcome',
+                         [('elmtree','elmtree'),
+                          ('34-elmtree', 'elmtree'),
+                          ('70 elmtree', 'elmtree'),
+                          ('-- tigger', 'tigger'),
+                          ('.tigger', 'tigger'),
+                          ('12345', '12345')
+                         ])
+def test_generalize_find_str(mock_str, expected_outcome):
+    test_str = generalize_find_str(mock_str)
+    assert test_str == expected_outcome
 
 def test_nested_get():
     lvl1 = {
