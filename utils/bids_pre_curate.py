@@ -176,62 +176,38 @@ def data2csv(
     data_df.to_csv(csv_file, index_label=False, index=False)
     return (csv_file,)
 
+def generalize_find_string(find_str):
+    """
+    Locate the
+    Args:
+        find_str:
 
-def suggest_new_name(existing_label, regex):
-    if make_file_name_safe(existing_label, regex, "") != existing_label:
-        return make_file_name_safe(existing_label, regex, "")
-    else:
-        return ""
+    Returns:
 
-
-def keep_specified_keys(data, keep_keys):
-    kept_data = []
-    for datum in data:
-        #        print(keep_keys)
-        kept_data.append(
-            {
-                (key if type(key) is str else ".".join(key)): (
-                    nested_get(datum, [key])
-                    if type(key) is str
-                    else nested_get(datum, key)
-                )
-                for key in keep_keys
-            }
-        )
-    return kept_data
-
-
-def read_from_csv(
-    acq_df,
-    subj_df,
-    ses_df,
-    run_level,
-    hierarchy,
-    dry_run=False,
-):
-    context = flywheel_gear_toolkit.GearToolkitContext()
-    fw = context.client
-    # TODO: Need to do some validation to make sure the CSV file is in the correct format
-    #   this should be at the row level, otherwise if they put columns in wrong, it may really
-    #   mess up their whole project
-    # Subjects and Sessions
-    acq_df.fillna("", inplace=True)
-    ses_df.fillna("", inplace=True)
-    subj_df.fillna("", inplace=True)
-    handle_acquisitions(acq_df, fw, run_level, hierarchy, dry_run)
-    handle_sessions(ses_df, fw, run_level, hierarchy, dry_run)
-    handle_subjects(subj_df, fw, run_level, hierarchy, dry_run)
-
+    """
 
 def handle_acquisitions(acq_df, fw, run_level, hierarchy, dry_run=False):
+    """
+
+    Args:
+        acq_df (pd.DataFrame): Full dataframe listing the original (and user-supplied) acquisition labels
+        fw (Geartoolkit context): Flywheel context
+        run_level (str) : targeted level in the hierarchy on which to operate
+        hierarchy (obj): Derived from the destination.parents to provide FW structure
+        dry_run (Boolean): Complete the real renaming or not?
+
+    Returns:
+
+    """
     base_find = f"parents.{run_level}={hierarchy[run_level]}"
     # Acquisitions
     for index, row in acq_df.iterrows():
         # Since len(rows) != len(project.acquisitions), need to find all acquisitions
         #   in the project for each row in the acquisition dataframe.
         # If names are numeric, the value has to be wrapped in double quotes
-        find_string = f"{base_find},label=\"=~{row['existing_acquisition_label']}\""
-        acquisitions_for_row = fw.acquisitions.iter_find(find_string)
+        find_str = f"{base_find},label=\"=~{row['existing_acquisition_label']}\""
+        find_str = generalize_find_string(find_str)
+        acquisitions_for_row = fw.acquisitions.iter_find(find_str)
 
         # print(row['existing_acquisition_label'],len(acquisitions_for_row))
 
@@ -244,8 +220,8 @@ def handle_acquisitions(acq_df, fw, run_level, hierarchy, dry_run=False):
                 new_acq_name = row["existing_acquisition_label"]
             # Warn for bad labels
             if (
-                make_file_name_safe(row["new_acquisition_label"], "")
-                != row["new_acquisition_label"]
+                    make_file_name_safe(row["new_acquisition_label"], "")
+                    != row["new_acquisition_label"]
             ):
                 log.warning(
                     f"New acquisition label f{row['new_acquisition_label']} may not be BIDS compliant"
@@ -288,7 +264,7 @@ def handle_sessions(ses_df, fw, run_level, hierarchy, dry_run=False):
 
             # Warn for bad labels
             if row["new_session_label"] != make_file_name_safe(
-                row["new_session_label"], ""
+                    row["new_session_label"], ""
             ):
                 log.warning(
                     f"New session label f{row['new_session_label']} may not be BIDS compliant"
@@ -331,8 +307,8 @@ def handle_subjects(subj_df, fw, run_level, hierarchy, dry_run=False):
         for index, subject_to_be_moved in subjects_to_be_moved.iterrows():
             # If label is the same, we can skip.
             if (
-                subject_to_be_moved["new_subject_label"]
-                == subject_to_be_moved["existing_subject_label"]
+                    subject_to_be_moved["new_subject_label"]
+                    == subject_to_be_moved["existing_subject_label"]
             ):
                 continue
             # If subject doesn't exist, update this subject to have the new label and code
@@ -391,3 +367,49 @@ def handle_subjects(subj_df, fw, run_level, hierarchy, dry_run=False):
                         f"Subject {new_subj.label} NOT deleted.  Check to make sure it is empty. Exiting"
                     )
                     sys.exit(1)
+
+def keep_specified_keys(data, keep_keys):
+    kept_data = []
+    for datum in data:
+        #        print(keep_keys)
+        kept_data.append(
+            {
+                (key if type(key) is str else ".".join(key)): (
+                    nested_get(datum, [key])
+                    if type(key) is str
+                    else nested_get(datum, key)
+                )
+                for key in keep_keys
+            }
+        )
+    return kept_data
+
+
+def read_from_csv(
+    acq_df,
+    subj_df,
+    ses_df,
+    run_level,
+    hierarchy,
+    dry_run=False,
+):
+    context = flywheel_gear_toolkit.GearToolkitContext()
+    fw = context.client
+    # TODO: Need to do some validation to make sure the CSV file is in the correct format
+    #   this should be at the row level, otherwise if they put columns in wrong, it may really
+    #   mess up their whole project
+    # Subjects and Sessions
+    acq_df.fillna("", inplace=True)
+    ses_df.fillna("", inplace=True)
+    subj_df.fillna("", inplace=True)
+    handle_acquisitions(acq_df, fw, run_level, hierarchy, dry_run)
+    handle_sessions(ses_df, fw, run_level, hierarchy, dry_run)
+    handle_subjects(subj_df, fw, run_level, hierarchy, dry_run)
+
+
+
+def suggest_new_name(existing_label, regex):
+    if make_file_name_safe(existing_label, regex, "") != existing_label:
+        return make_file_name_safe(existing_label, regex, "")
+    else:
+        return ""
