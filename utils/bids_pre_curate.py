@@ -178,13 +178,22 @@ def data2csv(
 
 def generalize_find_string(find_str):
     """
-    Locate the
+    Locate the main substring that identifies the sequence. (I.e., eliminate series numbers from
+    a substring match.)
     Args:
-        find_str:
+        find_str (str): unchecked find string read directly from the dataframe
 
     Returns:
-
+        Potentially modified find_str (str)
     """
+    first_letter = re.search(r'[A-Z]',find_str, re.I)
+    if first_letter == 0:
+        return find_str
+    elif first_letter > 0:
+        return find_str[first_letter:]
+    else:
+        log.debug('Numeric original acquisition label. May have issues generalizing.')
+        return find_str
 
 def handle_acquisitions(acq_df, fw, run_level, hierarchy, dry_run=False):
     """
@@ -205,11 +214,12 @@ def handle_acquisitions(acq_df, fw, run_level, hierarchy, dry_run=False):
         # Since len(rows) != len(project.acquisitions), need to find all acquisitions
         #   in the project for each row in the acquisition dataframe.
         # If names are numeric, the value has to be wrapped in double quotes
-        find_str = f"{base_find},label=\"=~{row['existing_acquisition_label']}\""
-        find_str = generalize_find_string(find_str)
+        existing_acq_label = generalize_find_string(row['existing_acquisition_label'])
+        find_str = f"{base_find},label=\"=~{existing_acq_label}\""
         acquisitions_for_row = fw.acquisitions.iter_find(find_str)
 
-        # print(row['existing_acquisition_label'],len(acquisitions_for_row))
+        # TODO add method for secondary criterion column (e.g., "ImageType") to check
+        # against the acquisitions_for_row
 
         for acquisition in acquisitions_for_row:
 
