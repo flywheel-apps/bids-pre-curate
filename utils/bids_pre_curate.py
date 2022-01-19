@@ -197,17 +197,15 @@ def generalize_find_string(find_str):
 
 def handle_acquisitions(acq_df, fw, run_level, hierarchy, dry_run=False):
     """
-
+    Updates the acquisition label based on the user-supplied input from the dataframe.
     Args:
         acq_df (pd.DataFrame): Full dataframe listing the original (and user-supplied) acquisition labels
         fw (Geartoolkit context): Flywheel context
         run_level (str) : targeted level in the hierarchy on which to operate
         hierarchy (obj): Derived from the destination.parents to provide FW structure
         dry_run (Boolean): Complete the real renaming or not?
-
-    Returns:
-
     """
+
     base_find = f"parents.{run_level}={hierarchy[run_level]}"
     # Acquisitions
     for index, row in acq_df.iterrows():
@@ -219,7 +217,8 @@ def handle_acquisitions(acq_df, fw, run_level, hierarchy, dry_run=False):
         acquisitions_for_row = fw.acquisitions.iter_find(find_str)
 
         # TODO add method for secondary criterion column (e.g., "ImageType") to check
-        # against the acquisitions_for_row
+        # against the acquisitions_for_row. A secondary column can help differentiate
+        # scans with the same name (e.g., Motion-corrected and not MoCo of the same acquisition)
 
         for acquisition in acquisitions_for_row:
 
