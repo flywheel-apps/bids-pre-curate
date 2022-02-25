@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the gear: set up for and call command-line command."""
 
+import logging
 import os
 import pprint
 import shutil
@@ -108,7 +109,12 @@ if __name__ == "__main__":
     gtk_context.init_logging()
     gtk_context.log_config()
 
+    # This is for backwards compatibility so I don't have to refactor all the log calls
+    log = logging.getLogger(__name__)
+    gtk_context.log = log
+
     main(gtk_context)
+
     gtk_context.log.info(f'BIDS-pre-curate is done.')
 
     sys.exit(0)
