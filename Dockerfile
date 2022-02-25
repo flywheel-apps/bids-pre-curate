@@ -8,10 +8,11 @@ ENV FLYWHEEL /flywheel/v0
 WORKDIR ${FLYWHEEL}
 
 # Install dependencies
-RUN pip install pipenv
-COPY Pipfile ./
-COPY Pipfile.lock ./
-RUN python3 -m pipenv install
+RUN pip install poetry
+COPY pyproject.toml ./
+COPY poetry.lock ./
+RUN poetry install
+
 # Save docker environ
 ENV PYTHONUNBUFFERED 1
 

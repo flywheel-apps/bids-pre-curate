@@ -18,8 +18,8 @@ def parse_config(context):
     conf_dict = {}
     config = context.config
     conf_dict['dry_run'] = config.get('dry_run', False)
-    conf_dict['suggest'] = config.get('suggest',True)
-    conf_dict['allows'] = config.get('allows','_-')
+    conf_dict['suggest'] = config.get('suggest', True)
+    conf_dict['allows'] = config.get('allows', '_-')
 
 
     return conf_dict
@@ -81,7 +81,7 @@ def main(gtk_context):
         )
     else:
         fw = gtk_context.client
-        acqs = [acq.to_dict() for acq in fw.get_project_acquisitions(project.id)]
+        acqs = [acq.to_dict() for acq in fw.acquisitions.iter_find(f"project={project.id}")]
         sess = [ses.to_dict() for ses in fw.get_project_sessions(project.id)]
         subs = [sub.to_dict() for sub in fw.get_project_subjects(project.id)]
 
