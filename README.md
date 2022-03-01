@@ -1,3 +1,5 @@
+# This repo has migrated to [GitLab](git@gitlab.com:flywheel-io/flywheel-apps/bids-pre-curate.git)
+
 # bids-pre-curation
 The bids pre-curation gear will help in the renaming of acquisitions and classification
 of data based on user-input on a bulk scale.
