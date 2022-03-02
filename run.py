@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the gear: set up for and call command-line command."""
 
+import logging
 import os
 import pprint
 import shutil
@@ -18,8 +19,8 @@ def parse_config(context):
     conf_dict = {}
     config = context.config
     conf_dict['dry_run'] = config.get('dry_run', False)
-    conf_dict['suggest'] = config.get('suggest',True)
-    conf_dict['allows'] = config.get('allows','_-')
+    conf_dict['suggest'] = config.get('suggest', True)
+    conf_dict['allows'] = config.get('allows', '_-')
 
 
     return conf_dict
@@ -81,7 +82,7 @@ def main(gtk_context):
         )
     else:
         fw = gtk_context.client
-        acqs = [acq.to_dict() for acq in fw.get_project_acquisitions(project.id)]
+        acqs = [acq.to_dict() for acq in fw.acquisitions.iter_find(f"project={project.id}")]
         sess = [ses.to_dict() for ses in fw.get_project_sessions(project.id)]
         subs = [sub.to_dict() for sub in fw.get_project_subjects(project.id)]
 
@@ -108,7 +109,12 @@ if __name__ == "__main__":
     gtk_context.init_logging()
     gtk_context.log_config()
 
+    # This is for backwards compatibility so I don't have to refactor all the log calls
+    log = logging.getLogger(__name__)
+    gtk_context.log = log
+
     main(gtk_context)
+
     gtk_context.log.info(f'BIDS-pre-curate is done.')
 
     sys.exit(0)
